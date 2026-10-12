@@ -1,0 +1,45 @@
+// Frequently asked questions. Shared by the Services page and (later) Book a Ride.
+// TODO: confirm Medicaid notice requirements and cancellation fees with the client.
+export type Faq = {
+  question: string;
+  answer: string;
+};
+
+export const faqs: Faq[] = [
+  {
+    question: "How far in advance should I book?",
+    answer:
+      "We recommend booking at least 24 hours ahead for scheduled trips, and 48 hours if you can. For same-day rides or hospital discharges, call us any time and we'll get a vehicle to you as soon as one is available. Medicaid trips may need extra notice depending on your plan.",
+  },
+  {
+    question: "Can a caregiver or family member ride along?",
+    answer:
+      "Yes. Caregivers and family members are welcome to ride with the passenger. Just let us know when you book so we can plan the right vehicle.",
+  },
+  {
+    question:
+      "What's the difference between door-to-door and door-through-door?",
+    answer:
+      "With door-to-door service, your driver meets you at the door of your home and walks you to the door of your destination. With door-through-door service, your driver also helps you inside, for example from your room to the vehicle, or all the way to the check-in desk.",
+  },
+  {
+    question: "Do you offer wait-and-return trips?",
+    answer:
+      "Yes. Your driver can wait while you're at your appointment, or come back when you call to say you're ready.",
+  },
+  {
+    question: "Are you really available 24/7?",
+    answer:
+      "Yes. We provide rides and customer service 24 hours a day, 7 days a week, including weekends, after hours and holidays.",
+  },
+  {
+    question: "Which payment methods do you accept?",
+    answer:
+      "We accept Medicaid, private insurance and cash. If you're not sure whether your trip is covered, call us and we'll help you find out before your ride.",
+  },
+  {
+    question: "What if I need to cancel?",
+    answer:
+      "Please let us know at least 24 hours before your pickup time. Private-pay rides cancelled with less notice, or missed without notice, may be charged a fee. Medicaid trips follow your plan's rules.",
+  },
+];

@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   LADE HEALTH CARE SERVICES — DESIGN TOKENS
+   Change a value here and it updates everywhere on the site.
+   See STYLE_GUIDE.md for what each token is used for, and visit
+   /style-guide in the browser to preview every token and component.
+   ========================================================================== */
+@theme {
+  /* --- Brand colors (sampled from the Lade logo) -------------------------
+     primary   = navy.  Header bar, dark sections, headings, footer.
+     secondary = blue.  Links, icons, card accents, info panels.
+     accent    = green. Calls to action (Book a Ride), checkmarks, highlights.
+     All text/background pairings meet WCAG AA contrast (4.5:1 or better). */
+  --color-primary: #0d3b6e;
+  --color-primary-dark: #082a52;
+  --color-secondary: #025cc5;
+  --color-secondary-light: #067cdb;
+  --color-accent: #097c21;
+  --color-accent-dark: #05642a;
+  --color-accent-light: #8bd43a; /* lime, for accents on navy backgrounds */
+
+  /* --- Neutrals ----------------------------------------------------------- */
+  --color-surface: #f4f5f7; /* light gray section / panel background */
+  --color-ink: #222222; /* body text */
+  --color-muted: #58595b; /* secondary text */
+  --color-line: #e3e6eb; /* borders and dividers */
+  --color-danger: #b42318; /* form errors */
+  --color-placeholder: #fff1a8; /* highlights [placeholder] copy that still needs real info */
+
+  /* --- Typography ---------------------------------------------------------
+     Font files are loaded in src/app/layout.tsx. To swap a font, change
+     the import there; these names stay the same. */
+  --font-sans: var(--font-body-face); /* body text */
+  --font-heading: var(--font-body-face); /* headings, buttons, labels */
+
+  /* --- Shape -------------------------------------------------------------- */
+  --radius-button: 0.375rem;
+  --radius-card: 0.75rem;
+  --radius-panel: 1rem;
+
+  /* --- Elevation ---------------------------------------------------------- */
+  --shadow-card: 0 1px 3px rgb(16 24 40 / 0.08), 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-card-hover:
+    0 12px 24px -6px rgb(16 24 40 / 0.14), 0 4px 8px -4px rgb(16 24 40 / 0.06);
+  --shadow-float: 0 20px 40px -12px rgb(16 24 40 / 0.25);
+}
+
+/* Layout values that aren't Tailwind theme keys. */
+:root {
+  --container-max: 80rem; /* max content width */
+  --section-y: 5rem; /* vertical padding of each page section (mobile) */
+  --section-y-lg: 6rem; /* vertical padding of each page section (tablet+) */
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+}
+
+/* ==========================================================================
+   LAYOUT
+   ========================================================================== */
+@utility container-site {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--container-max);
+  padding-inline: 1rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* ==========================================================================
+   COMPONENTS
+   Use these classes instead of repeating long utility strings in pages.
+   ========================================================================== */
+@layer components {
+  /* --- Sections ---------------------------------------------------------
+     <section class="section">            white background
+     <section class="section section-alt">  light gray background
+     <section class="section section-dark"> navy background, light text  */
+  .section {
+    padding-block: var(--section-y);
+
+    @media (width >= 40rem) {
+      padding-block: var(--section-y-lg);
+    }
+  }
+  .section-alt {
+    @apply bg-surface;
+  }
+  .section-dark {
+    @apply bg-primary text-white;
+  }
+
+  /* --- Headings --------------------------------------------------------- */
+  .display {
+    /* Hero headline. One per page. */
+    @apply font-heading text-4xl leading-[1.1] font-bold tracking-tight uppercase sm:text-5xl lg:text-6xl;
+  }
+  .section-title {
+    @apply font-heading text-3xl font-bold tracking-tight text-primary sm:text-4xl;
+  }
+  .section-lead {
+    /* Intro paragraph under a section title. */
+    @apply text-lg leading-relaxed text-muted;
+  }
+  .card-title {
+    @apply font-heading text-xl font-bold text-primary;
+  }
+
+  /* Headings inside dark sections automatically switch to light colors. */
+  .section-dark .section-title,
+  .section-dark .card-title {
+    @apply text-white;
+  }
+  .section-dark .section-lead {
+    @apply text-white/80;
+  }
+
+  /* --- Buttons ----------------------------------------------------------
+     .btn + one variant:
+       .btn-primary       green, the main call to action
+       .btn-outline       navy outline, on light backgrounds
+       .btn-light         white fill, on navy/green backgrounds
+       .btn-outline-light white outline, on navy/green/photo backgrounds
+     Add .btn-lg for hero-sized buttons. */
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-button px-6 font-heading text-[15px] font-semibold transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-secondary-light;
+  }
+  .btn-lg {
+    @apply min-h-14 px-7 text-base;
+  }
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-dark;
+  }
+  .btn-light {
+    @apply bg-white text-primary hover:bg-surface;
+  }
+  .btn-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white;
+  }
+  .btn-outline-light {
+    @apply border-2 border-white/80 text-white hover:bg-white hover:text-primary;
+  }
+
+  /* Text link with an arrow, e.g. "Learn more about us →" */
+  .link-arrow {
+    @apply inline-flex items-center gap-2 font-heading font-semibold text-secondary hover:text-primary;
+  }
+
+  /* --- Cards & panels --------------------------------------------------- */
+  .card {
+    @apply rounded-card bg-white p-8 shadow-card;
+  }
+  .card-hover {
+    @apply transition-shadow hover:shadow-card-hover;
+  }
+  .card-accent {
+    /* Colored top border, used on the service cards. */
+    @apply border-t-4 border-secondary;
+  }
+  .panel {
+    /* Larger colored block, e.g. the payment options box. */
+    @apply rounded-panel bg-secondary p-8 text-white sm:p-10;
+  }
+
+  /* --- Icons ------------------------------------------------------------ */
+  .icon-badge {
+    /* Round tinted circle behind a card icon. */
+    @apply grid h-16 w-16 place-items-center rounded-full bg-secondary/10 text-secondary;
+  }
+  .check-badge {
+    /* Small green circle with a checkmark, used in bullet lists. */
+    @apply mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent text-white;
+  }
+
+  /* --- Forms -----------------------------------------------------------
+     Wrap each control in the <Field> component (label, hint, error).   */
+  .form-label {
+    @apply block font-heading text-sm font-semibold text-primary;
+  }
+  .form-hint {
+    @apply mt-1 text-sm text-muted;
+  }
+  .form-input {
+    @apply mt-2 block w-full rounded-button border border-line bg-white px-4 py-3 text-base text-ink transition-colors placeholder:text-muted/70 focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none aria-invalid:border-danger aria-invalid:ring-danger/20;
+  }
+  .form-error {
+    @apply mt-2 text-sm font-medium text-danger;
+  }
+
+  /* --- Footer ----------------------------------------------------------- */
+  .footer-heading {
+    @apply mb-4 font-heading text-base font-semibold text-white;
+  }
+}
