@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
 import InputField from "@/components/form/InputField";
+import StepProgress from "@/components/form/StepProgress";
 import {
   checkMfaCode,
   checkName,
@@ -20,18 +21,26 @@ import { api, type InviteSetup } from "@/lib/api";
 const INVALID_INVITE =
   "This invite link is invalid or has expired. Ask an administrator to send you a new one.";
 
-// Two steps on one page: the API makes an authenticator secret for this
-// invite (shown as a QR code), then the form sets name + password and checks
-// a code from the app to prove it's connected.
+const STEPS = ["Phone", "You", "Password"] as const;
+const LAST_STEP = STEPS.length - 1;
+
+// Staff account setup in three steps, in the order people expect after
+// clicking the invite: scan the QR code and enter the phone's code → name →
+// password. The code is checked as soon as they press Next (codes only last
+// about 30 seconds), so taking their time on the later steps is fine. All
+// steps stay in the page (inactive ones hidden), so Back never loses answers.
 const AcceptInvite = ({ token }: { token: string }) => {
   const router = useRouter();
   const [setup, setSetup] = useState<InviteSetup>();
   const [loadError, setLoadError] = useState<string>();
+  const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string>();
   const [pending, setPending] = useState(false);
-  // Each call makes a new secret, so only ask once (React runs effects twice
-  // in development).
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstStep = useRef(true);
+  // Each call makes a new authenticator secret, so only ask once (React runs
+  // effects twice in development).
   const requested = useRef(false);
 
   useEffect(() => {
@@ -40,10 +49,27 @@ const AcceptInvite = ({ token }: { token: string }) => {
     api<InviteSetup>("/staff/invites/accept/start", { body: { token } }).then(
       (result) => {
         if (result.ok) setSetup(result.data);
-        else setLoadError(result.status === 400 ? INVALID_INVITE : result.message);
+        else
+          setLoadError(result.status === 400 ? INVALID_INVITE : result.message);
       },
     );
   }, [token]);
+
+  // New step: back to the top, and announce it to screen readers.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [step]);
+
+  const goTo = (next: number) => {
+    setErrors({});
+    setMessage(undefined);
+    setStep(next);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,18 +80,40 @@ const AcceptInvite = ({ token }: { token: string }) => {
       mfaCode: formText(form, "mfaCode").replace(/\s/g, ""),
     };
 
-    const fieldErrors = compactErrors({
-      name: checkName(values.name),
-      ...checkNewPassword(values.password, formPassword(form, "confirmPassword")),
-      mfaCode: checkMfaCode(values.mfaCode),
-    });
-    setErrors(fieldErrors);
+    const stepErrors = compactErrors(
+      step === 0
+        ? { mfaCode: checkMfaCode(values.mfaCode) }
+        : step === 1
+          ? { name: checkName(values.name) }
+          : checkNewPassword(
+              values.password,
+              formPassword(form, "confirmPassword"),
+            ),
+    );
+    setErrors(stepErrors);
     setMessage(undefined);
-    if (Object.keys(fieldErrors).length > 0) return;
+    if (Object.keys(stepErrors).length > 0) return;
+
+    // Step 1: check the phone's code with the server right away.
+    if (step === 0) {
+      setPending(true);
+      const verified = await api("/staff/invites/accept/verify-code", {
+        body: { token, mfaCode: values.mfaCode },
+      });
+      setPending(false);
+      if (verified.ok) goTo(1);
+      else setMessage(verified.message);
+      return;
+    }
+
+    if (step < LAST_STEP) {
+      goTo(step + 1);
+      return;
+    }
 
     setPending(true);
     const result = await api("/staff/invites/accept/complete", {
-      body: { token, ...values },
+      body: { token, name: values.name, password: values.password },
     });
 
     if (result.ok) {
@@ -88,21 +136,37 @@ const AcceptInvite = ({ token }: { token: string }) => {
     );
   }
 
+  const roleName = setup.role === "ADMIN" ? "an administrator" : "a dispatcher";
+
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-8">
+      <StepProgress steps={STEPS} current={step} label="Account setup steps" />
+
+      <h2 ref={headingRef} tabIndex={-1} className="sr-only">
+        Step {step + 1} of {STEPS.length}: {STEPS[step]}
+      </h2>
+
       {message && <FormAlert>{message}</FormAlert>}
 
-      <p className="text-muted">
-        Setting up <strong className="text-ink">{setup.email}</strong> as{" "}
-        {setup.role === "ADMIN" ? "an administrator" : "a dispatcher"}.
-      </p>
-
-      <fieldset className="space-y-4">
-        <legend className="card-title">1. Connect your authenticator app</legend>
-        <p className="text-muted">
-          Open an authenticator app (Google Authenticator, Microsoft
-          Authenticator, 1Password…) and scan this code.
-        </p>
+      {/* Step 1: Phone */}
+      <div hidden={step !== 0} className="space-y-6">
+        <div className="space-y-3 text-muted">
+          <p>
+            You&apos;ve been invited to join Lade as {roleName}, signing in as{" "}
+            <strong className="break-all text-ink">{setup.email}</strong>.
+            First, connect your phone.
+          </p>
+          <p>
+            Staff sign in with a password and a code from their phone, so a
+            stolen password alone can&apos;t open patient records.
+          </p>
+          <p>
+            <strong className="text-ink">iPhone:</strong> point the Camera at
+            the code below and tap &ldquo;Add verification code&rdquo;.{" "}
+            <strong className="text-ink">Android:</strong> scan it with Google
+            Authenticator or Microsoft Authenticator.
+          </p>
+        </div>
         <Image
           src={setup.qrCodeDataUrl}
           alt="QR code for your authenticator app"
@@ -113,23 +177,25 @@ const AcceptInvite = ({ token }: { token: string }) => {
         />
         <details className="text-sm text-muted">
           <summary className="cursor-pointer font-semibold text-secondary">
-            Can&apos;t scan it? Enter this key instead
+            Setting up on this phone? Enter this key instead
           </summary>
           <p className="mt-2 break-all font-mono text-ink">{setup.secret}</p>
         </details>
         <InputField
           name="mfaCode"
-          label="6-digit code from the app"
+          label="6-digit code from your phone"
+          hint="It changes every 30 seconds; enter the one showing now."
           inputMode="numeric"
           autoComplete="one-time-code"
           maxLength={7}
           required
           error={errors.mfaCode}
         />
-      </fieldset>
+      </div>
 
-      <fieldset className="space-y-6">
-        <legend className="card-title">2. Your details</legend>
+      {/* Step 2: You */}
+      <div hidden={step !== 1} className="space-y-6">
+        <p className="text-muted">Your phone is connected. Now, your name.</p>
         <InputField
           name="name"
           label="Your name"
@@ -137,12 +203,19 @@ const AcceptInvite = ({ token }: { token: string }) => {
           required
           error={errors.name}
         />
+      </div>
+
+      {/* Step 3: Password */}
+      <div hidden={step !== 2} className="space-y-6">
+        <p className="text-muted">
+          Choose a password you don&apos;t use anywhere else.
+        </p>
         <InputField
           name="password"
           label="Password"
           type="password"
           autoComplete="new-password"
-          hint="At least 8 characters. Don't reuse a password from another site."
+          hint="At least 8 characters."
           required
           error={errors.password}
         />
@@ -154,11 +227,31 @@ const AcceptInvite = ({ token }: { token: string }) => {
           required
           error={errors.confirmPassword}
         />
-      </fieldset>
+      </div>
 
-      <Button type="submit" size="lg" disabled={pending} className="w-full">
-        {pending ? "Setting up…" : "Create staff account"}
-      </Button>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+        {step > 0 ? (
+          <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>
+            Back
+          </Button>
+        ) : (
+          <span />
+        )}
+        <Button
+          type="submit"
+          size="lg"
+          disabled={pending}
+          className="sm:min-w-48"
+        >
+          {pending
+            ? step === 0
+              ? "Checking…"
+              : "Setting up…"
+            : step < LAST_STEP
+              ? "Next"
+              : "Create staff account"}
+        </Button>
+      </div>
     </form>
   );
 };

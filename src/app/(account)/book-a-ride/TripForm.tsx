@@ -5,6 +5,7 @@ import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
 import Field, { describedBy } from "@/components/form/Field";
 import InputField from "@/components/form/InputField";
+import StepProgress from "@/components/form/StepProgress";
 import AddressAutocomplete from "./AddressAutocomplete";
 import { checkPhone, compactErrors, type FieldErrors } from "@/lib/account";
 import {
@@ -239,7 +240,7 @@ const TripForm = ({
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-8">
-      <Progress step={step} />
+      <StepProgress steps={TRIP_STEPS} current={step} label="Booking steps" />
 
       <h2 ref={headingRef} tabIndex={-1} className="sr-only">
         Step {step + 1} of {TRIP_STEPS.length}: {TRIP_STEPS[step]}
@@ -518,28 +519,6 @@ const TripForm = ({
   );
 };
 
-// "Step 2 of 5" with the step names; the current one is highlighted.
-const Progress = ({ step }: { step: number }) => (
-  <div>
-    <p className="text-sm font-semibold text-secondary">
-      Step {step + 1} of {TRIP_STEPS.length}
-    </p>
-    <ol className="mt-3 grid grid-cols-5 gap-2" aria-label="Booking steps">
-      {TRIP_STEPS.map((name, index) => (
-        <li key={name} aria-current={index === step ? "step" : undefined}>
-          <span
-            className={`block h-1.5 rounded-full ${index <= step ? "bg-secondary" : "bg-line"}`}
-          />
-          <span
-            className={`mt-2 hidden text-xs sm:block ${index === step ? "font-semibold text-primary" : "text-muted"}`}
-          >
-            {name}
-          </span>
-        </li>
-      ))}
-    </ol>
-  </div>
-);
 
 // ---------- Pieces ----------
 

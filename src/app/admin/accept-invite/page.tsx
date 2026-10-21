@@ -15,7 +15,7 @@ const AcceptInvitePage = async ({
   return (
     <AuthShell
       title="Set up your staff account"
-      intro="You'll choose a password and connect an authenticator app. Staff accounts need both to sign in."
+      intro="Three quick steps: connect your phone, add your name, and choose a password."
     >
       <AcceptInvite token={typeof token === "string" ? token : ""} />
     </AuthShell>
