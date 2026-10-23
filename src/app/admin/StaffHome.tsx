@@ -5,10 +5,12 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
 import { api, type Staff } from "@/lib/api";
+import type { RideFilters } from "@/lib/staff";
 import { useSignedIn } from "@/lib/useSignedIn";
+import RideList from "./RideList";
 
-// Placeholder staff home. Ride management screens come with phase 3.
-const StaffHome = () => {
+// Staff home: who's signed in, and the ride list.
+const StaffHome = ({ filters }: { filters: RideFilters }) => {
   const router = useRouter();
   const { user: staff, error } = useSignedIn<Staff>(
     "/staff/auth/me",
@@ -47,12 +49,7 @@ const StaffHome = () => {
         </Button>
       </div>
 
-      <div className="card p-6 sm:p-8">
-        <h2 className="card-title">Rides</h2>
-        <p className="mt-3 text-muted">
-          Ride requests will show up here once online booking is live.
-        </p>
-      </div>
+      <RideList filters={filters} />
 
       <p className="text-sm text-muted">
         For patient privacy, you&apos;re signed out automatically after 15
