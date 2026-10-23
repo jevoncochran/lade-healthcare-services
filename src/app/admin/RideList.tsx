@@ -13,51 +13,35 @@ import {
   formatMoney,
   labelOf,
   tripKindOptions,
-  type BookingStatus,
 } from "@/lib/booking";
 import {
+  bookingHref,
   formatDayHeading,
   formatTime,
   PAGE_SIZE,
   rideFiltersHref,
   rideListQuery,
   shortAddress,
-  staffStatusLabel,
   statusFilterOptions,
   tampaDate,
   type RideFilters,
   type StaffBookingList,
   type StaffBookingSummary,
 } from "@/lib/staff";
-
-// Token colors per status. "Needs confirmation" stands out: it's the work.
-const badgeClass: Record<BookingStatus, string> = {
-  REQUESTED: "bg-secondary text-white",
-  CONFIRMED: "bg-accent/10 text-accent",
-  COMPLETED: "bg-surface text-muted",
-  CANCELLED: "bg-surface text-muted",
-  NO_SHOW: "bg-danger/10 text-danger",
-  PENDING_PAYMENT: "bg-surface text-muted",
-};
-
-const StatusBadge = ({ status }: { status: BookingStatus }) => (
-  <span
-    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${badgeClass[status]}`}
-  >
-    {staffStatusLabel[status]}
-  </span>
-);
+import StatusBadge from "./StatusBadge";
 
 const RideRow = ({
   ride,
   showDate,
+  listHref,
 }: {
   ride: StaffBookingSummary;
   showDate: boolean;
+  listHref: string;
 }) => {
   const ret = ride.returnLeg;
   return (
-    <li className="grid gap-x-6 gap-y-2 py-4 md:grid-cols-[9rem_1fr_1.4fr_10rem] md:items-start">
+    <li className="relative grid gap-x-6 gap-y-2 py-4 md:grid-cols-[9rem_1fr_1.4fr_10rem] md:items-start">
       <div>
         <p className="font-heading text-lg font-bold text-primary">
           {showDate ? formatDateTime(ride.pickupAt) : formatTime(ride.pickupAt)}
@@ -65,9 +49,13 @@ const RideRow = ({
         <p className="font-mono text-sm text-muted">{ride.reference}</p>
       </div>
       <div>
-        <p className="font-semibold text-ink">
+        {/* The link covers the whole row (after:inset-0), so anywhere opens it. */}
+        <Link
+          href={bookingHref(ride.id, listHref)}
+          className="font-semibold text-ink after:absolute after:inset-0 hover:text-secondary focus-visible:outline-none after:focus-visible:rounded-button after:focus-visible:outline-3 after:focus-visible:outline-secondary-light"
+        >
           {ride.rider.firstName} {ride.rider.lastName}
-        </p>
+        </Link>
         <p className="text-sm text-muted">
           {labelOf(careLevelOptions, ride.careLevel)} ·{" "}
           {labelOf(tripKindOptions, ride.tripKind)}
@@ -292,17 +280,27 @@ const RideList = ({ filters }: { filters: RideFilters }) => {
                 >
                   {formatDayHeading(group.date)}
                 </h3>
-                <ul className="divide-y divide-line">
+                <ul className="divide-y divide-line [&>li:hover]:bg-surface">
                   {group.rides.map((ride) => (
-                    <RideRow key={ride.id} ride={ride} showDate={false} />
+                    <RideRow
+                      key={ride.id}
+                      ride={ride}
+                      showDate={false}
+                      listHref={pageHref}
+                    />
                   ))}
                 </ul>
               </section>
             ))
           ) : (
-            <ul className="divide-y divide-line">
+            <ul className="divide-y divide-line [&>li:hover]:bg-surface">
               {list.bookings.map((ride) => (
-                <RideRow key={ride.id} ride={ride} showDate />
+                <RideRow
+                  key={ride.id}
+                  ride={ride}
+                  showDate
+                  listHref={pageHref}
+                />
               ))}
             </ul>
           )}

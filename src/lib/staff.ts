@@ -3,8 +3,10 @@
 import {
   BUSINESS_TIME_ZONE,
   type Address,
+  type Booking,
   type BookingStatus,
   type CareLevel,
+  type Relationship,
   type TripKind,
   type TripType,
 } from "./booking";
@@ -12,6 +14,7 @@ import {
 export type PaymentStatus =
   | "CARD_PENDING"
   | "CARD_SAVED"
+  | "CHARGE_PENDING"
   | "CHARGED"
   | "FAILED"
   | "REFUNDED"
@@ -43,6 +46,81 @@ export type StaffBookingList = {
   pageSize: number;
 };
 
+// GET /staff/bookings/:id: the customer view plus what only staff see.
+export type StaffBooking = Omit<Booking, "legs" | "rider"> & {
+  rider: Booking["rider"];
+  companionCount: number;
+  mobilityNotes: string | null;
+  instructions: string | null;
+  customerId: string | null;
+  requester: {
+    relationship: Relationship;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  legs: (Booking["legs"][number] & {
+    status: LegStatus;
+    waitedMinutes: number | null;
+    distanceMeters: number;
+  })[];
+  payment: {
+    status: PaymentStatus;
+    amountCents: number;
+    refundedCents: number;
+    failureCode: string | null;
+  } | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  charges: {
+    type: ChargeType;
+    leg: "OUTBOUND" | "RETURN" | null;
+    quantity: number | null;
+    amountCents: number;
+    note: string | null;
+    staffName: string | null;
+    at: string;
+  }[];
+  chargesTotalCents: number;
+  actions: StaffActions;
+  history: {
+    fromStatus: BookingStatus | null;
+    toStatus: BookingStatus;
+    actorType: "PUBLIC" | "CUSTOMER" | "STAFF" | "SYSTEM";
+    staffName: string | null;
+    note: string | null;
+    at: string;
+  }[];
+  updatedAt: string;
+};
+
+export type ChargeType =
+  | "BASE_FARE"
+  | "MILEAGE"
+  | "WAIT_TIME"
+  | "NO_SHOW"
+  | "LATE_CANCELLATION"
+  | "ADJUSTMENT";
+
+// What staff can do right now, worked out by the API from the booking's
+// status, pickup time and payment.
+export type StaffActions = {
+  confirm: boolean;
+  cancel: { allowed: boolean; feeCents: number | null };
+  noShow: { allowed: boolean; availableAt: string | null; feeCents: number };
+  complete: { allowed: boolean; availableAt: string | null };
+  retryCharge: boolean;
+};
+
+export type LegStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+
+export const legStatusLabel: Record<LegStatus, string> = {
+  SCHEDULED: "Scheduled",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+  NO_SHOW: "No-show",
+};
+
 // Shorter than the customer labels, and worded for the person acting on them.
 export const staffStatusLabel: Record<BookingStatus, string> = {
   REQUESTED: "Needs confirmation",
@@ -51,6 +129,90 @@ export const staffStatusLabel: Record<BookingStatus, string> = {
   CANCELLED: "Cancelled",
   NO_SHOW: "No-show",
   PENDING_PAYMENT: "Card not saved",
+};
+
+// History entries describe what happened, not the state it left.
+export const historyLabel: Record<BookingStatus, string> = {
+  PENDING_PAYMENT: "Booking started",
+  REQUESTED: "Card saved, request sent",
+  CONFIRMED: "Confirmed",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+  NO_SHOW: "Marked as no-show",
+};
+
+export const paymentStatusLabel: Record<PaymentStatus, string> = {
+  CARD_PENDING: "Card not saved yet",
+  CARD_SAVED: "Card on file, not charged",
+  CHARGE_PENDING: "Charge sent, no answer yet",
+  CHARGED: "Charged",
+  FAILED: "Charge failed",
+  REFUNDED: "Refunded",
+  PARTIALLY_REFUNDED: "Partly refunded",
+  CANCELED: "Canceled",
+};
+
+// One line of what a booking owes, in words.
+export const chargeLabel = (charge: StaffBooking["charges"][number]) => {
+  const where =
+    charge.leg === "RETURN"
+      ? " (ride back)"
+      : charge.leg === "OUTBOUND"
+        ? " (ride there)"
+        : "";
+  switch (charge.type) {
+    case "BASE_FARE":
+      return "Base fare";
+    case "MILEAGE":
+      return `Mileage: ${charge.quantity ?? 0} mi`;
+    case "WAIT_TIME":
+      return `Waiting time${where}: ${charge.quantity ?? 0} × 15 min`;
+    case "NO_SHOW":
+      return "No-show fee";
+    case "LATE_CANCELLATION":
+      return "Late cancellation fee";
+    case "ADJUSTMENT":
+      return charge.note ? `Adjustment: ${charge.note}` : "Adjustment";
+  }
+};
+
+// Why a charge didn't go through, from the payment provider's code.
+export const chargeFailureText = (code: string | null) => {
+  switch (code) {
+    case "insufficient_funds":
+      return "The card doesn't have enough funds.";
+    case "expired_card":
+      return "The card has expired.";
+    case "requires_action":
+    case "authentication_required":
+      return "The bank wants the customer to approve this charge.";
+    case "no_saved_card":
+      return "There's no card on file for this booking.";
+    case null:
+    case "card_declined":
+    case "generic_decline":
+      return "The card was declined.";
+    default:
+      return `The card was declined (${code.replaceAll("_", " ")}).`;
+  }
+};
+
+// Who booked, from the staff side ("Me" on the booking form).
+export const staffRelationshipLabel: Record<Relationship, string> = {
+  SELF: "The rider",
+  FAMILY_CAREGIVER: "Family member or caregiver",
+  FACILITY_STAFF: "Facility staff",
+  OTHER: "Someone else",
+};
+
+export const actorLabel: Record<
+  StaffBooking["history"][number]["actorType"],
+  string
+> = {
+  PUBLIC: "website visitor",
+  CUSTOMER: "customer",
+  STAFF: "staff",
+  SYSTEM: "system",
 };
 
 // In the order a dispatcher filters by most.
@@ -115,6 +277,16 @@ export const rideFiltersHref = (filters: RideFilters) => {
   return query ? `/admin?${query}` : "/admin";
 };
 
+// The ride list a detail page came from, for its "back" link. Only staff
+// list URLs are accepted, never another site.
+export const safeListHref = (back: string | undefined) =>
+  back && /^\/admin(\?|$)/.test(back) ? back : "/admin";
+
+export const bookingHref = (id: string, listHref: string) =>
+  listHref === "/admin"
+    ? `/admin/bookings/${id}`
+    : `/admin/bookings/${id}?back=${encodeURIComponent(listHref)}`;
+
 // Booking references look like "LD-7K3Q9X"; anything else is a last name.
 const REFERENCE = /^LD-?([A-Z0-9]{6})$/i;
 
@@ -166,6 +338,11 @@ export const formatDayHeading = (date: string) => {
   if (date === tomorrow) return `Tomorrow · ${label}`;
   return label;
 };
+
+export const METERS_PER_MILE = 1609.344;
+
+export const formatMiles = (meters: number) =>
+  `${(meters / METERS_PER_MILE).toFixed(1)} mi`;
 
 // "123 Palm Ave, Tampa": enough to dispatch from at a glance.
 export const shortAddress = (address: Address) =>

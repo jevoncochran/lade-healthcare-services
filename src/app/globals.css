@@ -131,7 +131,7 @@ body {
        .btn-outline-light white outline, on navy/green/photo backgrounds
      Add .btn-lg for hero-sized buttons. */
   .btn {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-button px-6 font-heading text-[15px] font-semibold transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-secondary-light;
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-button px-6 font-heading text-[15px] font-semibold transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-secondary-light disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-lg {
     @apply min-h-14 px-7 text-base;
