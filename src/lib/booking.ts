@@ -3,10 +3,7 @@
 export const BUSINESS_TIME_ZONE = "America/New_York";
 
 export type CareLevel =
-  | "AMBULATORY"
-  | "WHEELCHAIR"
-  | "BARIATRIC_WHEELCHAIR"
-  | "STRETCHER";
+  "AMBULATORY" | "WHEELCHAIR" | "BARIATRIC_WHEELCHAIR" | "STRETCHER";
 export type TripKind = "ONE_WAY" | "ROUND_TRIP" | "WAIT_AND_RETURN";
 export type TripType =
   | "MEDICAL_APPOINTMENT"
@@ -14,10 +11,7 @@ export type TripType =
   | "DIALYSIS_RECURRING"
   | "PRIVATE";
 export type Relationship =
-  | "SELF"
-  | "FAMILY_CAREGIVER"
-  | "FACILITY_STAFF"
-  | "OTHER";
+  "SELF" | "FAMILY_CAREGIVER" | "FACILITY_STAFF" | "OTHER";
 
 export const careLevelOptions: {
   value: CareLevel;
@@ -160,13 +154,66 @@ export const statusLabel: Record<BookingStatus, string> = {
   NO_SHOW: "No-show",
 };
 
+export type PaymentStatus =
+  | "CARD_PENDING"
+  | "CARD_SAVED"
+  | "CHARGE_PENDING"
+  | "CHARGED"
+  | "FAILED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED"
+  | "CANCELED";
+
+export type ChargeType =
+  | "BASE_FARE"
+  | "MILEAGE"
+  | "WAIT_TIME"
+  | "NO_SHOW"
+  | "LATE_CANCELLATION"
+  | "ADJUSTMENT";
+
+// Payment, in the customer's words.
+export const customerPaymentLabel: Record<PaymentStatus, string> = {
+  CARD_PENDING: "Card not saved",
+  CARD_SAVED: "Card saved, not charged yet",
+  CHARGE_PENDING: "Payment processing",
+  CHARGED: "Paid",
+  FAILED: "Payment didn't go through",
+  REFUNDED: "Refunded",
+  PARTIALLY_REFUNDED: "Partly refunded",
+  CANCELED: "Not charged",
+};
+
+// A customer's own ride on "My rides" (GET /bookings, GET /bookings/:id):
+// the booking plus how it went and whether they can still cancel it.
+export type CustomerRide = Omit<Booking, "legs"> & {
+  legs: (Booking["legs"][number] & {
+    status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+  })[];
+  cancelledAt: string | null;
+  charges: {
+    type: ChargeType;
+    leg: "OUTBOUND" | "RETURN" | null;
+    quantity: number | null;
+    amountCents: number;
+  }[];
+  chargesTotalCents: number;
+  paymentStatus: PaymentStatus | null;
+  // feeCents: the late-cancellation fee if they cancel now, else null.
+  cancel: { allowed: boolean; feeCents: number | null };
+};
+
 // ---------- Formatting ----------
 
 export const formatMoney = (cents: number) =>
   (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export const formatAddress = (address: Address) =>
-  [address.line1, address.line2, `${address.city}, ${address.state} ${address.zip}`]
+  [
+    address.line1,
+    address.line2,
+    `${address.city}, ${address.state} ${address.zip}`,
+  ]
     .filter(Boolean)
     .join(", ");
 
@@ -180,6 +227,40 @@ export const formatDateTime = (iso: string) =>
     hour: "numeric",
     minute: "2-digit",
   });
+
+// One line of what a booking owes, in words.
+export const chargeLabel = (
+  charge: {
+    type: ChargeType;
+    leg: "OUTBOUND" | "RETURN" | null;
+    quantity: number | null;
+    note?: string | null;
+  },
+  // Say which leg only when the trip has a ride back.
+  twoLegs = true,
+) => {
+  const where = !twoLegs
+    ? ""
+    : charge.leg === "RETURN"
+      ? " (ride back)"
+      : charge.leg === "OUTBOUND"
+        ? " (ride there)"
+        : "";
+  switch (charge.type) {
+    case "BASE_FARE":
+      return "Base fare";
+    case "MILEAGE":
+      return `Mileage: ${charge.quantity ?? 0} mi`;
+    case "WAIT_TIME":
+      return `Waiting time${where}: ${charge.quantity ?? 0} × 15 min`;
+    case "NO_SHOW":
+      return "No-show fee";
+    case "LATE_CANCELLATION":
+      return "Late cancellation fee";
+    case "ADJUSTMENT":
+      return charge.note ? `Adjustment: ${charge.note}` : "Adjustment";
+  }
+};
 
 // ---------- Times ----------
 

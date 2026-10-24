@@ -1,18 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
 import { ArrowRightIcon } from "@/components/Icons";
 import { api, type Customer } from "@/lib/api";
-import {
-  formatAddress,
-  formatDateTime,
-  formatMoney,
-  statusLabel,
-  type Booking,
-} from "@/lib/booking";
 import { useSignedIn } from "@/lib/useSignedIn";
 
 const AccountDetails = () => {
@@ -97,71 +90,22 @@ const Detail = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-const YourRides = () => {
-  const [bookings, setBookings] = useState<Booking[]>();
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    api<Booking[]>("/bookings").then((result) =>
-      result.ok ? setBookings(result.data) : setError(result.message),
-    );
-  }, []);
-
-  return (
-    <div className="card p-6 sm:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="card-title">Your rides</h2>
-        <Button href="/book-a-ride" icon={ArrowRightIcon} iconPosition="right">
-          Book a Ride
-        </Button>
-      </div>
-
-      {error && (
-        <div className="mt-4">
-          <FormAlert>{error}</FormAlert>
-        </div>
-      )}
-      {!bookings && !error && (
-        <p role="status" className="mt-4 text-muted">
-          Loading your rides…
-        </p>
-      )}
-      {bookings?.length === 0 && (
-        <p className="mt-4 text-muted">You haven&apos;t booked any rides yet.</p>
-      )}
-
-      {bookings && bookings.length > 0 && (
-        <ul className="mt-4 divide-y divide-line">
-          {bookings.map((booking) => {
-            const outbound = booking.legs[0];
-            return (
-              <li key={booking.id} className="py-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="font-heading font-semibold text-primary">
-                    {outbound.pickupAt
-                      ? formatDateTime(outbound.pickupAt)
-                      : "Time to be arranged"}
-                  </p>
-                  <p className="text-sm font-medium text-secondary">
-                    {statusLabel[booking.status]}
-                  </p>
-                </div>
-                <p className="mt-1 text-sm text-muted">
-                  {formatAddress(outbound.pickup)} → {formatAddress(outbound.dropoff)}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {booking.reference} · {booking.rider.firstName}{" "}
-                  {booking.rider.lastName} ·{" "}
-                  {formatMoney(booking.price.totalCents)}
-                  {booking.price.distanceIsEstimate && " (estimated distance)"}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+// Rides live on their own page (/my-rides): upcoming, past, cancelling.
+const YourRides = () => (
+  <div className="card p-6 sm:p-8">
+    <h2 className="card-title">Your rides</h2>
+    <p className="mt-3 text-muted">
+      See your upcoming and past rides, what you paid, or cancel a ride.
+    </p>
+    <div className="mt-4 flex flex-wrap gap-3">
+      <Button href="/my-rides" icon={ArrowRightIcon} iconPosition="right">
+        My rides
+      </Button>
+      <Button href="/book-a-ride" variant="outline">
+        Book a Ride
+      </Button>
     </div>
-  );
-};
+  </div>
+);
 
 export default AccountDetails;

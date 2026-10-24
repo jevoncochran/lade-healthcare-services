@@ -4,22 +4,14 @@ import {
   BUSINESS_TIME_ZONE,
   type Address,
   type Booking,
+  type ChargeType,
+  type PaymentStatus,
   type BookingStatus,
   type CareLevel,
   type Relationship,
   type TripKind,
   type TripType,
 } from "./booking";
-
-export type PaymentStatus =
-  | "CARD_PENDING"
-  | "CARD_SAVED"
-  | "CHARGE_PENDING"
-  | "CHARGED"
-  | "FAILED"
-  | "REFUNDED"
-  | "PARTIALLY_REFUNDED"
-  | "CANCELED";
 
 // One row of GET /staff/bookings.
 export type StaffBookingSummary = {
@@ -94,14 +86,6 @@ export type StaffBooking = Omit<Booking, "legs" | "rider"> & {
   updatedAt: string;
 };
 
-export type ChargeType =
-  | "BASE_FARE"
-  | "MILEAGE"
-  | "WAIT_TIME"
-  | "NO_SHOW"
-  | "LATE_CANCELLATION"
-  | "ADJUSTMENT";
-
 // What staff can do right now, worked out by the API from the booking's
 // status, pickup time and payment.
 export type StaffActions = {
@@ -150,30 +134,6 @@ export const paymentStatusLabel: Record<PaymentStatus, string> = {
   REFUNDED: "Refunded",
   PARTIALLY_REFUNDED: "Partly refunded",
   CANCELED: "Canceled",
-};
-
-// One line of what a booking owes, in words.
-export const chargeLabel = (charge: StaffBooking["charges"][number]) => {
-  const where =
-    charge.leg === "RETURN"
-      ? " (ride back)"
-      : charge.leg === "OUTBOUND"
-        ? " (ride there)"
-        : "";
-  switch (charge.type) {
-    case "BASE_FARE":
-      return "Base fare";
-    case "MILEAGE":
-      return `Mileage: ${charge.quantity ?? 0} mi`;
-    case "WAIT_TIME":
-      return `Waiting time${where}: ${charge.quantity ?? 0} × 15 min`;
-    case "NO_SHOW":
-      return "No-show fee";
-    case "LATE_CANCELLATION":
-      return "Late cancellation fee";
-    case "ADJUSTMENT":
-      return charge.note ? `Adjustment: ${charge.note}` : "Adjustment";
-  }
 };
 
 // Why a charge didn't go through, from the payment provider's code.

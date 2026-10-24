@@ -9,6 +9,7 @@ import {
   careLevelOptions,
   formatAddress,
   formatDateTime,
+  chargeLabel,
   formatMoney,
   labelOf,
   tripKindOptions,
@@ -17,7 +18,6 @@ import {
 } from "@/lib/booking";
 import {
   actorLabel,
-  chargeLabel,
   formatMiles,
   legStatusLabel,
   paymentStatusLabel,
@@ -185,7 +185,9 @@ const PriceAndPayment = ({ booking }: { booking: StaffBooking }) => (
         <dl className="mt-2 divide-y divide-line">
           {booking.charges.map((charge, index) => (
             <div key={index} className="flex justify-between gap-4 py-3">
-              <dt className="text-muted">{chargeLabel(charge)}</dt>
+              <dt className="text-muted">
+                {chargeLabel(charge, booking.legs.length > 1)}
+              </dt>
               <dd className="font-medium text-ink">
                 {formatMoney(charge.amountCents)}
               </dd>

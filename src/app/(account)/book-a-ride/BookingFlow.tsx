@@ -187,7 +187,7 @@ const BookingFlow = () => {
           confirm the ride with you before the pickup.
         </p>
         <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-          <Button href="/account">View my rides</Button>
+          <Button href="/my-rides">View my rides</Button>
           <Button
             variant="outline"
             onClick={() => {
