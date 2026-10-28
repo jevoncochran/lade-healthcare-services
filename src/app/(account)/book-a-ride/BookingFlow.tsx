@@ -332,10 +332,13 @@ const Review = ({
             onChange={(event) => setAccepted(event.target.checked)}
             className="mt-1 h-5 w-5 shrink-0 accent-accent"
           />
-          {/* TODO (launch blocker): link the booking terms once Lade provides them. */}
+          {/* New tab: following the link must not lose the booking. */}
           <span className="text-ink">
-            I agree to the booking terms. My card is saved now and charged after
-            the ride. It may also be charged for waiting time, a no-show, or a
+            I agree to the{" "}
+            <a href="/terms" target="_blank" className="font-semibold text-secondary underline">
+              booking terms
+            </a>
+            . My card is saved now and charged after the ride. It may also be charged for waiting time, a no-show, or a
             cancellation less than 2 hours before pickup.
           </span>
         </label>

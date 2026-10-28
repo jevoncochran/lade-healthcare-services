@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Button from "./Button";
-import { ArrowRightIcon, CheckIcon } from "./Icons";
+import { ArrowRightIcon, CheckIcon, PhoneIcon } from "./Icons";
 import type { Service } from "@/lib/services";
+import { site } from "@/lib/site";
 
 // One service on the Services page: media on one side, copy on the other.
 // Set `reverse` to put the media on the right; alternate it row by row.
@@ -74,14 +75,20 @@ const ServiceRow = ({
               </li>
             ))}
           </ul>
-          <Button
-            href="/book-a-ride"
-            icon={ArrowRightIcon}
-            iconPosition="right"
-            className="mt-8"
-          >
-            Book a Ride
-          </Button>
+          {service.action === "call" ? (
+            <Button href={site.phoneHref} icon={PhoneIcon} className="mt-8">
+              Call for a quote: {site.phone}
+            </Button>
+          ) : (
+            <Button
+              href="/book-a-ride"
+              icon={ArrowRightIcon}
+              iconPosition="right"
+              className="mt-8"
+            >
+              Book a Ride
+            </Button>
+          )}
         </div>
       </div>
     </section>

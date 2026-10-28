@@ -6,6 +6,7 @@ import {
   HourglassIcon,
   RepeatIcon,
   StretcherIcon,
+  VanIcon,
   WalkIcon,
   WheelchairIcon,
   type IconComponent,
@@ -112,6 +113,9 @@ export type Service = {
   highlights: string[];
   image?: string;
   imageAlt?: string;
+  // "call": a phone button instead of "Book a Ride", for trips online
+  // booking doesn't take (e.g. long distance: call for a quote).
+  action?: "book" | "call";
 };
 
 export const services: Service[] = [
@@ -211,6 +215,21 @@ export const services: Service[] = [
       "Family events, errands and outings",
       "Accessible vehicles for every rider",
       "One-way, round trip or wait-and-return",
+    ],
+  },
+  {
+    id: "long-distance",
+    icon: VanIcon,
+    action: "call",
+    title: "Long-Distance & Out-of-State Trips",
+    paragraphs: [
+      "Heading to a specialist in Gainesville, Orlando or Jacksonville, or to another state? We provide long-distance medical transportation from the Tampa Bay area across Florida and beyond, with the same trained drivers and accessible vehicles.",
+      "Long trips are priced individually, so call us for a quote. We'll plan the route, any stops along the way and the ride home.",
+    ],
+    highlights: [
+      "Across Florida and out of state",
+      "Wheelchair and stretcher trips",
+      "Call for a quote",
     ],
   },
 ];

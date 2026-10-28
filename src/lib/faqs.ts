@@ -33,6 +33,11 @@ export const faqs: Faq[] = [
       "Yes. We provide rides and customer service 24 hours a day, 7 days a week, including weekends, after hours and holidays.",
   },
   {
+    question: "Do you go outside the Tampa Bay area?",
+    answer:
+      "Yes. We're based in Tampa and serve the Tampa Bay area every day, and we also provide long-distance trips across Florida and to other states, for example to a specialist or a hospital far from home. Long trips are priced individually: call us for a quote.",
+  },
+  {
     question: "Which payment methods do you accept?",
     answer:
       "We accept Medicaid, private insurance and cash. If you're not sure whether your trip is covered, call us and we'll help you find out before your ride.",

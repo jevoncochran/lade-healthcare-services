@@ -89,7 +89,15 @@ const Footer = () => {
           <p>
             © {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
-          <p>For medical emergencies, call 911.</p>
+          <p className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link href="/terms" className="hover:text-white hover:underline">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="hover:text-white hover:underline">
+              Privacy Notice
+            </Link>
+            <span>For medical emergencies, call 911.</span>
+          </p>
         </div>
       </div>
     </footer>

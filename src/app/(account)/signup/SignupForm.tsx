@@ -179,10 +179,18 @@ const SignupForm = () => {
               aria-invalid={!!errors.acceptTerms}
               aria-describedby={errors.acceptTerms ? "acceptTerms-error" : undefined}
             />
-            {/* TODO (launch blocker): link the Terms of Service and Privacy Notice once Lade provides them. */}
+            {/* New tab: following a link must not lose the half-filled form. */}
             <span className="text-ink">
-              I agree to the Terms of Service and Privacy Notice, including the
-              charges for waiting time, no-shows and late cancellations.
+              I agree to the{" "}
+              <a href="/terms" target="_blank" className="font-semibold text-secondary underline">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" target="_blank" className="font-semibold text-secondary underline">
+                Privacy Notice
+              </a>
+              , including the charges for waiting time, no-shows and late
+              cancellations.
             </span>
           </label>
           {errors.acceptTerms && (
