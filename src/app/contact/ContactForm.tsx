@@ -4,11 +4,56 @@ import { startTransition, useActionState, type FormEvent } from "react";
 import Button from "@/components/Button";
 import { CheckIcon } from "@/components/Icons";
 import Field, { describedBy } from "@/components/form/Field";
-import { contactTopics, type ContactFormState } from "@/lib/contact";
+import { api } from "@/lib/api";
+import {
+  contactTopics,
+  validateContact,
+  type ContactFormState,
+  type ContactValues,
+} from "@/lib/contact";
 import { site } from "@/lib/site";
-import { sendContactMessage } from "./actions";
 
 const initialState: ContactFormState = { status: "idle" };
+
+const text = (formData: FormData, key: string) =>
+  String(formData.get(key) ?? "").trim();
+
+// Checks the fields here for quick feedback, then sends the message to the
+// booking API, which checks it again and emails it to Lade's inbox through
+// Amazon SES (the visitor's email as reply-to). Nothing is stored.
+const sendContactMessage = async (
+  _prevState: ContactFormState,
+  formData: FormData,
+): Promise<ContactFormState> => {
+  const values: ContactValues = {
+    name: text(formData, "name"),
+    email: text(formData, "email"),
+    phone: text(formData, "phone"),
+    topic: text(formData, "topic"),
+    message: text(formData, "message"),
+  };
+
+  const errors = validateContact(values);
+  if (Object.keys(errors).length > 0) {
+    return {
+      status: "error",
+      message: "Please fix the highlighted fields and try again.",
+      errors,
+    };
+  }
+
+  const result = await api("/contact", {
+    // `company` is the hidden honeypot field: the API drops bot messages.
+    body: {
+      ...values,
+      phone: values.phone || undefined,
+      company: text(formData, "company") || undefined,
+    },
+  });
+  return result.ok
+    ? { status: "success" }
+    : { status: "error", message: result.message };
+};
 
 const ContactForm = ({ defaultTopic = "" }: { defaultTopic?: string }) => {
   const [state, formAction, pending] = useActionState(

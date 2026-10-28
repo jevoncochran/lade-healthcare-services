@@ -211,16 +211,16 @@ Wrap every control in **`<Field>`** (`src/components/form/Field.tsx`), which add
 </Field>
 ```
 
-- Validate on the server in a Server Action and return field errors (see `src/app/contact/actions.ts`).
-- Submit with `onSubmit` + `startTransition(() => formAction(formData))`, not `<form action>`. That avoids React's automatic reset, so fields keep their values when errors come back.
+- Forms send to the booking API **from the browser** with `api()` in `src/lib/api.ts`. The API validates everything again, rate-limits per visitor and checks the request came from this site; a shared rules file in `src/lib/` mirrors its rules so errors show next to the right field (see `src/app/contact/ContactForm.tsx` and `src/lib/contact.ts`).
+- Submit with `onSubmit` + `startTransition(() => formAction(formData))` (with `useActionState`), not `<form action>`. That avoids React's automatic reset, so fields keep their values when errors come back.
 - Error text uses the `danger` token (`#b42318`).
 - Ask visitors not to put medical details in general forms.
-- Deliver submissions through `sendInquiry` in `src/lib/notify.ts`.
+- The contact form is emailed to Lade's inbox by the API (`POST /contact`, Amazon SES), with the visitor's email as reply-to. Nothing is stored.
 - For a plain text-style input, `<InputField>` (`src/components/form/InputField.tsx`) does the `<Field>` wiring for you, and adds a Show/Hide toggle to password inputs.
 
 ### Account forms (sign in, sign up, password reset, staff pages)
 
-These are the exception to "validate in a Server Action". They call the booking API **from the browser** with `api()` in `src/lib/api.ts`, because the API sets the sign-in cookie and it has to land in the visitor's browser. The API checks everything again; `src/lib/account.ts` mirrors its rules so errors show next to the right field.
+Like every form, these call the booking API from the browser, which also matters here because the API sets the sign-in cookie and it has to land in the visitor's browser. `src/lib/account.ts` mirrors the API's rules so errors show next to the right field.
 
 - Lay them out with `<AuthShell>`, show problems with `<FormAlert>`, and swap the form for `<SuccessMessage>` when it's done (`src/components/account/`).
 - Pages that need a signed-in person use `useSignedIn()` (`src/lib/useSignedIn.ts`), which sends them to sign in if their session has ended.
