@@ -177,15 +177,20 @@ const Services = () => {
               </li>
             ))}
           </ul>
+          {/* Online booking only takes cards; Medicaid and insurance trips are
+              booked by phone (owner to confirm the billing process). */}
           <p className="mx-auto mt-8 max-w-2xl text-center text-muted">
-            Not sure if your trip is covered? Call us at{" "}
+            <strong className="text-ink">Booking online?</strong> Pay by card:
+            it&apos;s saved when you book and charged after the ride.{" "}
+            <strong className="text-ink">Using Medicaid or insurance?</strong>{" "}
+            Call us at{" "}
             <a
               href={site.phoneHref}
               className="font-semibold text-secondary hover:underline"
             >
               {site.phone}
             </a>{" "}
-            and we&apos;ll check before your ride.
+            to book, and we&apos;ll check your coverage before your ride.
           </p>
         </div>
       </section>

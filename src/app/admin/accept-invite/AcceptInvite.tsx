@@ -21,8 +21,11 @@ import { api, type InviteSetup } from "@/lib/api";
 const INVALID_INVITE =
   "This invite link is invalid or has expired. Ask an administrator to send you a new one.";
 
-const STEPS = ["Phone", "You", "Password"] as const;
-const LAST_STEP = STEPS.length - 1;
+// A sign-in reset (forgotten password, lost phone) skips "You": the account
+// already has a name.
+const INVITE_STEPS = ["Phone", "You", "Password"] as const;
+const RESET_STEPS = ["Phone", "Password"] as const;
+type StepName = (typeof INVITE_STEPS)[number];
 
 // Staff account setup in three steps, in the order people expect after
 // clicking the invite: scan the QR code and enter the phone's code → name →
@@ -65,6 +68,11 @@ const AcceptInvite = ({ token }: { token: string }) => {
     headingRef.current?.focus();
   }, [step]);
 
+  const isReset = setup?.kind === "reset";
+  const steps: readonly StepName[] = isReset ? RESET_STEPS : INVITE_STEPS;
+  const lastStep = steps.length - 1;
+  const current = steps[step];
+
   const goTo = (next: number) => {
     setErrors({});
     setMessage(undefined);
@@ -81,9 +89,9 @@ const AcceptInvite = ({ token }: { token: string }) => {
     };
 
     const stepErrors = compactErrors(
-      step === 0
+      current === "Phone"
         ? { mfaCode: checkMfaCode(values.mfaCode) }
-        : step === 1
+        : current === "You"
           ? { name: checkName(values.name) }
           : checkNewPassword(
               values.password,
@@ -95,7 +103,7 @@ const AcceptInvite = ({ token }: { token: string }) => {
     if (Object.keys(stepErrors).length > 0) return;
 
     // Step 1: check the phone's code with the server right away.
-    if (step === 0) {
+    if (current === "Phone") {
       setPending(true);
       const verified = await api("/staff/invites/accept/verify-code", {
         body: { token, mfaCode: values.mfaCode },
@@ -106,14 +114,17 @@ const AcceptInvite = ({ token }: { token: string }) => {
       return;
     }
 
-    if (step < LAST_STEP) {
+    if (step < lastStep) {
       goTo(step + 1);
       return;
     }
 
     setPending(true);
     const result = await api("/staff/invites/accept/complete", {
-      body: { token, name: values.name, password: values.password },
+      // A reset keeps the account's name.
+      body: isReset
+        ? { token, password: values.password }
+        : { token, name: values.name, password: values.password },
     });
 
     if (result.ok) {
@@ -140,16 +151,16 @@ const AcceptInvite = ({ token }: { token: string }) => {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-8">
-      <StepProgress steps={STEPS} current={step} label="Account setup steps" />
+      <StepProgress steps={steps} current={step} label="Account setup steps" />
 
       <h2 ref={headingRef} tabIndex={-1} className="sr-only">
-        Step {step + 1} of {STEPS.length}: {STEPS[step]}
+        Step {step + 1} of {steps.length}: {current}
       </h2>
 
       {message && <FormAlert>{message}</FormAlert>}
 
       {/* Step 1: Phone */}
-      <div hidden={step !== 0} className="space-y-6">
+      <div hidden={current !== "Phone"} className="space-y-6">
         <div className="space-y-3 text-muted">
           {setup.kind === "reset" ? (
             <p>
@@ -203,7 +214,7 @@ const AcceptInvite = ({ token }: { token: string }) => {
       </div>
 
       {/* Step 2: You */}
-      <div hidden={step !== 1} className="space-y-6">
+      <div hidden={current !== "You"} className="space-y-6">
         <p className="text-muted">Your phone is connected. Now, your name.</p>
         <InputField
           name="name"
@@ -216,7 +227,7 @@ const AcceptInvite = ({ token }: { token: string }) => {
       </div>
 
       {/* Step 3: Password */}
-      <div hidden={step !== 2} className="space-y-6">
+      <div hidden={current !== "Password"} className="space-y-6">
         <p className="text-muted">
           Choose a password you don&apos;t use anywhere else.
         </p>
@@ -257,7 +268,7 @@ const AcceptInvite = ({ token }: { token: string }) => {
             ? step === 0
               ? "Checking…"
               : "Setting up…"
-            : step < LAST_STEP
+            : step < lastStep
               ? "Next"
               : setup.kind === "reset"
                 ? "Save and sign in"

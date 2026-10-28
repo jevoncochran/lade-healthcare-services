@@ -12,7 +12,6 @@ import {
   type IconComponent,
 } from "@/components/Icons";
 import PageHero from "@/components/PageHero";
-import Placeholder from "@/components/Placeholder";
 import SectionHeader from "@/components/SectionHeader";
 import { site } from "@/lib/site";
 
@@ -49,7 +48,7 @@ const values: { icon: IconComponent; title: string; description: string }[] = [
   },
 ];
 
-// TODO: confirm every driver requirement with the client before launch.
+// Confirmed by Jevon for launch (2026-10-28).
 const driverStandards = [
   "Background checked",
   "Clean driving record",
@@ -163,11 +162,6 @@ const About = () => {
                   </li>
                 ))}
               </ul>
-              <p className="mt-6 text-sm">
-                <Placeholder>
-                  Confirm driver requirements with client
-                </Placeholder>
-              </p>
             </article>
 
             <article className="card card-accent">

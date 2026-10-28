@@ -1,5 +1,6 @@
 // Frequently asked questions. Shared by the Services page and (later) Book a Ride.
-// TODO: confirm Medicaid notice requirements and cancellation fees with the client.
+// Cancellation answer matches the booking terms (/terms) and what the API
+// charges. TODO (owner): the Medicaid / insurance booking and billing process.
 export type Faq = {
   question: string;
   answer: string;
@@ -40,11 +41,11 @@ export const faqs: Faq[] = [
   {
     question: "Which payment methods do you accept?",
     answer:
-      "We accept Medicaid, private insurance and cash. If you're not sure whether your trip is covered, call us and we'll help you find out before your ride.",
+      "We accept Medicaid, private insurance, cash and cards. Booking online? You pay by card: it's saved when you book and charged after the ride. Using Medicaid or insurance? Call us to book, and we'll check your coverage before your ride.",
   },
   {
     question: "What if I need to cancel?",
     answer:
-      "Please let us know at least 24 hours before your pickup time. Private-pay rides cancelled with less notice, or missed without notice, may be charged a fee. Medicaid trips follow your plan's rules.",
+      "Cancel from My rides in your account, or call us. It's free until we confirm your ride, and up to 2 hours before a confirmed pickup. Cancelling less than 2 hours before pickup, or not being there when the driver arrives, costs a fee for card-paid rides; we show it before you cancel. Medicaid and insurance trips follow your plan's rules.",
   },
 ];

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
 import { api } from "@/lib/api";
+import { useLiveUpdates } from "@/lib/useLiveUpdates";
 import {
   careLevelOptions,
   formatDateTime,
@@ -199,9 +200,9 @@ const describe = (filters: RideFilters) => {
   return "Rides";
 };
 
-// The staff ride list: filters, then rides by day. No automatic refresh:
-// that would keep the session alive forever and defeat the 15-minute
-// automatic sign-out. Staff press Refresh instead.
+// The staff ride list: filters, then rides by day. Updates itself within
+// about 10 seconds of any change (useLiveUpdates); those checks don't count
+// as activity, so the 15-minute automatic sign-out still applies.
 const RideList = ({ filters }: { filters: RideFilters }) => {
   const router = useRouter();
   const query = rideListQuery(filters);
@@ -227,6 +228,12 @@ const RideList = ({ filters }: { filters: RideFilters }) => {
       active = false;
     };
   }, [query, pageHref, reloads, router]);
+
+  useLiveUpdates(
+    "/staff/bookings/changes",
+    () => setReloads((count) => count + 1),
+    () => router.replace(`/admin/login?next=${encodeURIComponent(pageHref)}`),
+  );
 
   const loading = result?.query !== query;
   const list = loading ? undefined : result?.list;

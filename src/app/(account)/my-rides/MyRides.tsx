@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
@@ -13,6 +14,7 @@ import {
   statusLabel,
   type CustomerRide,
 } from "@/lib/booking";
+import { useLiveUpdates } from "@/lib/useLiveUpdates";
 import { useSignedIn } from "@/lib/useSignedIn";
 
 const pickupTime = (ride: CustomerRide) => ride.legs[0].pickupAt ?? "";
@@ -93,15 +95,24 @@ const MyRides = () => {
     "/auth/me",
     "/login",
   );
+  const router = useRouter();
   const [rides, setRides] = useState<CustomerRide[]>();
   const [error, setError] = useState<string>();
+  // Bumped when one of their rides changes (e.g. Lade confirms it).
+  const [reloads, setReloads] = useState(0);
 
   useEffect(() => {
     if (!customer) return;
     api<CustomerRide[]>("/bookings").then((result) =>
       result.ok ? setRides(result.data) : setError(result.message),
     );
-  }, [customer]);
+  }, [customer, reloads]);
+
+  useLiveUpdates(
+    "/bookings/changes",
+    () => setReloads((count) => count + 1),
+    () => router.replace("/login?next=%2Fmy-rides"),
+  );
 
   if (signInError || error) {
     return <FormAlert>{signInError ?? error}</FormAlert>;

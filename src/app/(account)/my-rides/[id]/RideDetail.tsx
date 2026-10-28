@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
@@ -20,6 +21,7 @@ import {
   type CustomerRide,
 } from "@/lib/booking";
 import { site } from "@/lib/site";
+import { useLiveUpdates } from "@/lib/useLiveUpdates";
 import { useSignedIn } from "@/lib/useSignedIn";
 
 const Row = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -220,6 +222,7 @@ const Cancel = ({
 
 // One of the customer's rides: details, what it cost, and cancelling.
 const RideDetail = ({ id }: { id: string }) => {
+  const router = useRouter();
   const { user: customer, error: signInError } = useSignedIn<Customer>(
     "/auth/me",
     "/login",
@@ -253,6 +256,15 @@ const RideDetail = ({ id }: { id: string }) => {
       active = false;
     };
   }, [customer, fetchRide, show]);
+
+  // Lade confirming, completing or cancelling the ride shows up here within
+  // about 10 seconds.
+  useLiveUpdates(
+    "/bookings/changes",
+    () => void fetchRide().then(show),
+    () =>
+      router.replace(`/login?next=${encodeURIComponent(`/my-rides/${id}`)}`),
+  );
 
   const back = (
     <Link href="/my-rides" className="link-arrow">

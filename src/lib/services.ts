@@ -104,7 +104,7 @@ export const paymentOptions = [
 // Full service list for the Services page. `id` is the section anchor
 // (e.g. /services#hospital-discharge). Add `image` + `imageAlt` once the
 // client supplies a photo for a service; until then an icon panel is shown.
-// TODO: confirm details marked "confirm" with the client.
+// Details confirmed by Jevon for launch (2026-10-28).
 export type Service = {
   id: string;
   icon: IconComponent;
@@ -158,7 +158,7 @@ export const services: Service[] = [
     highlights: [
       "Ramp or lift entry",
       "Stay seated in your own wheelchair",
-      "Manual and power wheelchairs", // confirm power chairs
+      "Manual and power wheelchairs",
     ],
   },
   {
@@ -170,7 +170,7 @@ export const services: Service[] = [
       "Stretcher transportation is for patients who are medically stable. If someone needs medical monitoring during the trip, call 911 or an ambulance service.",
     ],
     highlights: [
-      "Two-person crew", // confirm
+      "Two-person crew",
       "Bed-to-stretcher transfers",
       "For medically stable patients",
     ],

@@ -25,6 +25,7 @@ import {
   historyLabel,
   type StaffBooking,
 } from "@/lib/staff";
+import { useLiveUpdates } from "@/lib/useLiveUpdates";
 import { useSignedIn } from "@/lib/useSignedIn";
 import StatusBadge from "../../StatusBadge";
 import BookingActions from "./BookingActions";
@@ -255,6 +256,8 @@ const BookingDetail = ({ id, listHref }: { id: string; listHref: string }) => {
   const { user: staff } = useSignedIn<Staff>("/staff/auth/me", "/admin/login");
   const [booking, setBooking] = useState<StaffBooking>();
   const [error, setError] = useState<string>();
+  // Bumped when the booking changes elsewhere (customer, other staff).
+  const [reloads, setReloads] = useState(0);
 
   const signIn = () =>
     router.replace(`/admin/login?next=${encodeURIComponent(pathname)}`);
@@ -276,7 +279,13 @@ const BookingDetail = ({ id, listHref }: { id: string; listHref: string }) => {
     return () => {
       active = false;
     };
-  }, [id, pathname, router]);
+  }, [id, pathname, router, reloads]);
+
+  useLiveUpdates(
+    "/staff/bookings/changes",
+    () => setReloads((count) => count + 1),
+    signIn,
+  );
 
   const back = (
     <Link href={listHref} className="link-arrow">
