@@ -307,3 +307,45 @@ export const formatMiles = (meters: number) =>
 // "123 Palm Ave, Tampa": enough to dispatch from at a glance.
 export const shortAddress = (address: Address) =>
   `${address.line1}, ${address.city}`;
+
+// ---------- Staff management (admins) ----------
+
+export type StaffMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "DISPATCHER";
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  locked: boolean; // too many wrong sign-ins (15 minutes)
+  pendingReset: boolean;
+};
+
+export type PendingInvite = {
+  id: string;
+  email: string;
+  role: "ADMIN" | "DISPATCHER";
+  kind: "invite" | "reset";
+  expiresAt: string;
+  createdAt: string;
+  invitedBy: string | null;
+};
+
+export type StaffOverview = {
+  members: StaffMember[];
+  invites: PendingInvite[];
+};
+
+// Invites and resets also return their one-time link, in case the email
+// didn't arrive.
+export type StaffLinkResult = StaffOverview & {
+  link: string;
+  expiresAt: string;
+  emailed: boolean;
+};
+
+export const roleLabel: Record<StaffMember["role"], string> = {
+  ADMIN: "Administrator",
+  DISPATCHER: "Dispatcher",
+};

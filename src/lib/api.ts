@@ -77,6 +77,9 @@ export type Staff = {
 };
 
 export type InviteSetup = {
+  // "reset": an existing account getting a new password and phone code.
+  kind: "invite" | "reset";
+  name: string | null; // the account's current name, for a reset
   email: string;
   role: Staff["role"];
   otpauthUrl: string;

@@ -151,11 +151,20 @@ const AcceptInvite = ({ token }: { token: string }) => {
       {/* Step 1: Phone */}
       <div hidden={step !== 0} className="space-y-6">
         <div className="space-y-3 text-muted">
-          <p>
-            You&apos;ve been invited to join Lade as {roleName}, signing in as{" "}
-            <strong className="break-all text-ink">{setup.email}</strong>.
-            First, connect your phone.
-          </p>
+          {setup.kind === "reset" ? (
+            <p>
+              An administrator reset the sign-in for{" "}
+              <strong className="break-all text-ink">{setup.email}</strong>.
+              You&apos;ll choose a new password and connect your phone again. If
+              your phone still has an old Lade entry, delete it first.
+            </p>
+          ) : (
+            <p>
+              You&apos;ve been invited to join Lade as {roleName}, signing in as{" "}
+              <strong className="break-all text-ink">{setup.email}</strong>.
+              First, connect your phone.
+            </p>
+          )}
           <p>
             Staff sign in with a password and a code from their phone, so a
             stolen password alone can&apos;t open patient records.
@@ -199,6 +208,7 @@ const AcceptInvite = ({ token }: { token: string }) => {
         <InputField
           name="name"
           label="Your name"
+          defaultValue={setup.name ?? undefined}
           autoComplete="name"
           required
           error={errors.name}
@@ -249,7 +259,9 @@ const AcceptInvite = ({ token }: { token: string }) => {
               : "Setting up…"
             : step < LAST_STEP
               ? "Next"
-              : "Create staff account"}
+              : setup.kind === "reset"
+                ? "Save and sign in"
+                : "Create staff account"}
         </Button>
       </div>
     </form>

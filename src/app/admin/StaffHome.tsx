@@ -44,9 +44,16 @@ const StaffHome = ({ filters }: { filters: RideFilters }) => {
             {staff.role === "ADMIN" ? "Administrator" : "Dispatcher"}
           </p>
         </div>
-        <Button variant="outline" onClick={signOut} disabled={signingOut}>
-          {signingOut ? "Signing out…" : "Sign out"}
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          {staff.role === "ADMIN" && (
+            <Button variant="outline" href="/admin/staff">
+              Manage staff
+            </Button>
+          )}
+          <Button variant="outline" onClick={signOut} disabled={signingOut}>
+            {signingOut ? "Signing out…" : "Sign out"}
+          </Button>
+        </div>
       </div>
 
       <RideList filters={filters} />
