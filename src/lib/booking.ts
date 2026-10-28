@@ -142,7 +142,12 @@ export type Booking = {
 
 export type CreatedBooking = {
   booking: Booking;
-  payment: { provider: "fake" | "stripe"; clientSecret: string } | null;
+  payment: {
+    provider: "fake" | "stripe";
+    clientSecret: string;
+    // Stripe's publishable key for the card form (null with the fake gateway).
+    publishableKey: string | null;
+  } | null;
 };
 
 export const statusLabel: Record<BookingStatus, string> = {

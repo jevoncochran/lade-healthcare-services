@@ -383,10 +383,11 @@ const CardStep = ({
         Your card is saved now and charged after the ride.
       </p>
 
-      {payment?.provider === "stripe" ? (
+      {payment?.provider === "stripe" && payment.publishableKey ? (
         <StripeCardForm
           bookingId={booking.id}
           clientSecret={payment.clientSecret}
+          publishableKey={payment.publishableKey}
           onSaved={onSaved}
         />
       ) : (

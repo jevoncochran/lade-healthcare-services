@@ -6,6 +6,9 @@ import type { NextConfig } from "next";
 const tokenPages = ["/verify-email", "/reset-password", "/admin/accept-invite"];
 
 const nextConfig: NextConfig = {
+  // A self-contained server (.next/standalone) for the Docker image that
+  // runs on Google Cloud Run. See Dockerfile.
+  output: "standalone",
   headers: async () =>
     tokenPages.map((source) => ({
       source,

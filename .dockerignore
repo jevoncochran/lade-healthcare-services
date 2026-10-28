@@ -1,0 +1,10 @@
+# Kept out of the image (and out of what's uploaded to Cloud Build).
+node_modules
+.next
+.git
+.env*
+!.env.example
+npm-debug.log*
+.DS_Store
+*.md
+!README.md

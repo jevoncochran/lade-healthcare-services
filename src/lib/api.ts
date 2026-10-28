@@ -1,10 +1,11 @@
 // Calls the Lade booking API (lade-hcs-server) from the browser.
 //
-// Requests send cookies (`credentials: "include"`): the API keeps the sign-in
-// session in an httpOnly cookie that page scripts can't read. Only use this
-// from Client Components.
+// Requests go to this site's own /api/*, which forwards them to the API
+// (src/app/api/[...path]/route.ts). So the API's sign-in session cookie
+// (httpOnly: page scripts can't read it) is always first-party, on any
+// domain. Only use this from Client Components.
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = "/api";
 
 export type ApiResult<T> =
   | { ok: true; status: number; data: T }

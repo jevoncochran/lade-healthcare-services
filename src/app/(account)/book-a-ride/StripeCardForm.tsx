@@ -13,10 +13,16 @@ import FormAlert from "@/components/account/FormAlert";
 import { api } from "@/lib/api";
 import type { Booking } from "@/lib/booking";
 
-const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-
-// Loaded once, and only on pages that show the card form.
-const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
+// Stripe.js, loaded once per key, and only on pages that show the card form.
+// The key comes from the API with each card setup (test or live, matching
+// its secret key), so the website has no Stripe setting of its own.
+const stripeByKey = new Map<string, ReturnType<typeof loadStripe>>();
+const stripeFor = (publishableKey: string) => {
+  if (!stripeByKey.has(publishableKey)) {
+    stripeByKey.set(publishableKey, loadStripe(publishableKey));
+  }
+  return stripeByKey.get(publishableKey)!;
+};
 
 // Stripe's card form runs in its own frame, so it can't use our CSS. Hand it
 // the site's design tokens from globals.css instead of copying colors here.
@@ -42,25 +48,21 @@ const appearanceFromTokens = (): Appearance => {
 const StripeCardForm = ({
   bookingId,
   clientSecret,
+  publishableKey,
   onSaved,
 }: {
   bookingId: string;
   clientSecret: string;
+  publishableKey: string;
   onSaved: (booking: Booking) => void;
 }) => {
   const appearance = useMemo(() => appearanceFromTokens(), []);
 
-  if (!stripePromise) {
-    return (
-      <FormAlert>
-        Card payments aren&apos;t set up on this site yet
-        (NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is missing).
-      </FormAlert>
-    );
-  }
-
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+    <Elements
+      stripe={stripeFor(publishableKey)}
+      options={{ clientSecret, appearance }}
+    >
       <CardForm bookingId={bookingId} onSaved={onSaved} />
     </Elements>
   );
@@ -102,9 +104,12 @@ const CardForm = ({
       return;
     }
 
-    const confirmed = await api<Booking>(`/bookings/${bookingId}/confirm-card`, {
-      method: "POST",
-    });
+    const confirmed = await api<Booking>(
+      `/bookings/${bookingId}/confirm-card`,
+      {
+        method: "POST",
+      },
+    );
     setPending(false);
 
     if (!confirmed.ok) {
