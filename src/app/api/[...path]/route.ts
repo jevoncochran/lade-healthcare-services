@@ -11,6 +11,9 @@ import type { NextRequest } from "next/server";
 // verifies webhook signatures on them), Origin (the API's same-site check)
 // and X-Forwarded-For (its per-visitor rate limits). Nothing is logged here:
 // these requests carry patient information.
+//
+// API_PROXY_SECRET (the API's PROXY_SECRET) is added to every request: the
+// API refuses requests without it, so it can only be reached through here.
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +21,9 @@ const UNREACHABLE = JSON.stringify({
   message:
     "We couldn't reach our booking system. Check your connection and try again.",
 });
+
+// Set by this route only; a visitor's own copy is dropped.
+const PROXY_SECRET_HEADER = "x-lade-proxy";
 
 // Connection-specific headers that mustn't be passed on, plus ones fetch
 // sets itself (the body is re-sent, and responses arrive decompressed).
@@ -51,8 +57,12 @@ const forward = async (request: NextRequest) => {
 
   const headers = new Headers();
   request.headers.forEach((value, name) => {
-    if (!HOP_BY_HOP.has(name)) headers.set(name, value);
+    if (!HOP_BY_HOP.has(name) && name !== PROXY_SECRET_HEADER) {
+      headers.set(name, value);
+    }
   });
+  const secret = process.env.API_PROXY_SECRET;
+  if (secret) headers.set(PROXY_SECRET_HEADER, secret);
 
   let upstream: Response;
   try {
