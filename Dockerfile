@@ -7,11 +7,14 @@
 # next.config.ts). Settings like API_URL are read when the container starts,
 # so the same image works for testing and production.
 
-# 1. Dependencies, from the lockfile exactly.
+# 1. Dependencies, at the lockfile's versions. `npm install`, not `npm ci`:
+#    a lockfile made on macOS can fail npm ci's strict check on Linux (an npm
+#    issue with optional/peer packages; here picomatch, via fdir), while
+#    npm install keeps the locked versions and resolves just that difference.
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install --no-audit --no-fund
 
 # 2. Build.
 FROM node:22-alpine AS build
