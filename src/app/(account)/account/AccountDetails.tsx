@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import FormAlert from "@/components/account/FormAlert";
 import { ArrowRightIcon } from "@/components/Icons";
 import { api, type Customer } from "@/lib/api";
+import { formatPhone } from "@/lib/phone";
 import { useSignedIn } from "@/lib/useSignedIn";
 
 const AccountDetails = () => {
@@ -74,7 +75,7 @@ const AccountDetails = () => {
           <Detail label="First name" value={customer.firstName} />
           <Detail label="Last name" value={customer.lastName} />
           <Detail label="Email" value={customer.email} />
-          <Detail label="Phone" value={customer.phone} />
+          <Detail label="Phone" value={formatPhone(customer.phone)} />
         </dl>
       </div>
 

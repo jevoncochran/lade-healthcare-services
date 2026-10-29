@@ -11,6 +11,7 @@ import {
   type ContactFormState,
   type ContactValues,
 } from "@/lib/contact";
+import { phoneInputProps } from "@/lib/phone";
 import { site } from "@/lib/site";
 
 const initialState: ContactFormState = { status: "idle" };
@@ -125,8 +126,7 @@ const ContactForm = ({ defaultTopic = "" }: { defaultTopic?: string }) => {
           <input
             id="phone"
             name="phone"
-            type="tel"
-            autoComplete="tel"
+            {...phoneInputProps}
             className="form-input"
             aria-invalid={!!errors.phone}
             aria-describedby={describedBy("phone", undefined, errors.phone)}

@@ -19,6 +19,7 @@ import {
   type FieldErrors,
 } from "@/lib/account";
 import { api } from "@/lib/api";
+import { phoneInputProps } from "@/lib/phone";
 
 const SignupForm = () => {
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -146,8 +147,7 @@ const SignupForm = () => {
         <InputField
           name="phone"
           label="Phone"
-          type="tel"
-          autoComplete="tel"
+          {...phoneInputProps}
           hint="We'll call this number if we need to reach you about a ride."
           required
           error={errors.phone}
