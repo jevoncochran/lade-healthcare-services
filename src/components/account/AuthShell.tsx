@@ -12,7 +12,7 @@ const AuthShell = ({
   title?: string;
   intro?: ReactNode;
   children: ReactNode;
-  /** Links under the card, e.g. "Already have an account? Sign in". */
+  /** Links at the bottom of the card, e.g. "Already have an account? Sign in". */
   footer?: ReactNode;
 }) => {
   return (
@@ -21,12 +21,18 @@ const AuthShell = ({
         <div className="mx-auto max-w-lg">
           <div className="card p-6 sm:p-10">
             {title && <h1 className="section-title text-3xl">{title}</h1>}
-            {intro && <p className="mt-3 leading-relaxed text-muted">{intro}</p>}
-            <div className={title || intro ? "mt-8" : undefined}>{children}</div>
+            {intro && (
+              <p className="mt-3 leading-relaxed text-muted">{intro}</p>
+            )}
+            <div className={title || intro ? "mt-8" : undefined}>
+              {children}
+            </div>
+            {footer && (
+              <div className="mt-8 space-y-2 border-t border-line pt-6 text-center text-muted">
+                {footer}
+              </div>
+            )}
           </div>
-          {footer && (
-            <div className="mt-6 space-y-2 text-center text-muted">{footer}</div>
-          )}
         </div>
       </div>
     </section>

@@ -25,6 +25,7 @@ import {
   historyLabel,
   type StaffBooking,
 } from "@/lib/staff";
+import { formatPhone } from "@/lib/phone";
 import { useLiveUpdates } from "@/lib/useLiveUpdates";
 import { useSignedIn } from "@/lib/useSignedIn";
 import StatusBadge from "../../StatusBadge";
@@ -50,7 +51,7 @@ const AddressBlock = ({ address }: { address: Address }) => (
 
 const PhoneLink = ({ phone }: { phone: string }) => (
   <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="link-arrow">
-    {phone}
+    {formatPhone(phone)}
   </a>
 );
 

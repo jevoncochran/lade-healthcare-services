@@ -8,6 +8,7 @@ import InputField from "@/components/form/InputField";
 import StepProgress from "@/components/form/StepProgress";
 import AddressAutocomplete from "./AddressAutocomplete";
 import { checkPhone, compactErrors, type FieldErrors } from "@/lib/account";
+import { phoneInputProps } from "@/lib/phone";
 import {
   careLevelOptions,
   relationshipOptions,
@@ -283,7 +284,7 @@ const TripForm = ({
               <InputField
                 name="riderPhone"
                 label="Rider's phone"
-                type="tel"
+                {...phoneInputProps}
                 hint="So the driver can reach them on the day."
                 defaultValue={initial.riderPhone}
                 error={errors.riderPhone}

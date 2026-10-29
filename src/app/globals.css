@@ -75,6 +75,28 @@ body {
   }
 }
 
+/* Tailwind v4 resets buttons to the arrow cursor; show the hand on anything
+   clickable, and the "not allowed" cursor when it's disabled. */
+@layer base {
+  button,
+  [role="button"],
+  summary,
+  select,
+  label[for],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="submit"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
 /* ==========================================================================
    COMPONENTS
    Use these classes instead of repeating long utility strings in pages.
