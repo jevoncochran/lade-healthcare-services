@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Button from "@/components/Button";
@@ -8,7 +7,6 @@ import FormAlert from "@/components/account/FormAlert";
 import InputField from "@/components/form/InputField";
 import StepProgress from "@/components/form/StepProgress";
 import {
-  checkMfaCode,
   checkName,
   checkNewPassword,
   compactErrors,
@@ -21,17 +19,14 @@ import { api, type InviteSetup } from "@/lib/api";
 const INVALID_INVITE =
   "This invite link is invalid or has expired. Ask an administrator to send you a new one.";
 
-// A sign-in reset (forgotten password, lost phone) skips "You": the account
-// already has a name.
-const INVITE_STEPS = ["Phone", "You", "Password"] as const;
-const RESET_STEPS = ["Phone", "Password"] as const;
+// A sign-in reset (forgotten password) skips "You": the account already has
+// a name, so it's a single step.
+const INVITE_STEPS = ["You", "Password"] as const;
+const RESET_STEPS = ["Password"] as const;
 type StepName = (typeof INVITE_STEPS)[number];
 
-// Staff account setup in three steps, in the order people expect after
-// clicking the invite: scan the QR code and enter the phone's code → name →
-// password. The code is checked as soon as they press Next (codes only last
-// about 30 seconds), so taking their time on the later steps is fine. All
-// steps stay in the page (inactive ones hidden), so Back never loses answers.
+// Staff account setup: name → password. Both steps stay in the page
+// (inactive ones hidden), so Back never loses answers.
 const AcceptInvite = ({ token }: { token: string }) => {
   const router = useRouter();
   const [setup, setSetup] = useState<InviteSetup>();
@@ -42,20 +37,21 @@ const AcceptInvite = ({ token }: { token: string }) => {
   const [pending, setPending] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstStep = useRef(true);
-  // Each call makes a new authenticator secret, so only ask once (React runs
-  // effects twice in development).
-  const requested = useRef(false);
 
   useEffect(() => {
-    if (!token || requested.current) return;
-    requested.current = true;
+    if (!token) return;
+    let active = true;
     api<InviteSetup>("/staff/invites/accept/start", { body: { token } }).then(
       (result) => {
+        if (!active) return;
         if (result.ok) setSetup(result.data);
         else
           setLoadError(result.status === 400 ? INVALID_INVITE : result.message);
       },
     );
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   // New step: back to the top, and announce it to screen readers.
@@ -85,34 +81,19 @@ const AcceptInvite = ({ token }: { token: string }) => {
     const values = {
       name: formText(form, "name"),
       password: formPassword(form, "password"),
-      mfaCode: formText(form, "mfaCode").replace(/\s/g, ""),
     };
 
     const stepErrors = compactErrors(
-      current === "Phone"
-        ? { mfaCode: checkMfaCode(values.mfaCode) }
-        : current === "You"
-          ? { name: checkName(values.name) }
-          : checkNewPassword(
-              values.password,
-              formPassword(form, "confirmPassword"),
-            ),
+      current === "You"
+        ? { name: checkName(values.name) }
+        : checkNewPassword(
+            values.password,
+            formPassword(form, "confirmPassword"),
+          ),
     );
     setErrors(stepErrors);
     setMessage(undefined);
     if (Object.keys(stepErrors).length > 0) return;
-
-    // Step 1: check the phone's code with the server right away.
-    if (current === "Phone") {
-      setPending(true);
-      const verified = await api("/staff/invites/accept/verify-code", {
-        body: { token, mfaCode: values.mfaCode },
-      });
-      setPending(false);
-      if (verified.ok) goTo(1);
-      else setMessage(verified.message);
-      return;
-    }
 
     if (step < lastStep) {
       goTo(step + 1);
@@ -151,7 +132,13 @@ const AcceptInvite = ({ token }: { token: string }) => {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-8">
-      <StepProgress steps={steps} current={step} label="Account setup steps" />
+      {steps.length > 1 && (
+        <StepProgress
+          steps={steps}
+          current={step}
+          label="Account setup steps"
+        />
+      )}
 
       <h2 ref={headingRef} tabIndex={-1} className="sr-only">
         Step {step + 1} of {steps.length}: {current}
@@ -159,63 +146,13 @@ const AcceptInvite = ({ token }: { token: string }) => {
 
       {message && <FormAlert>{message}</FormAlert>}
 
-      {/* Step 1: Phone */}
-      <div hidden={current !== "Phone"} className="space-y-6">
-        <div className="space-y-3 text-muted">
-          {setup.kind === "reset" ? (
-            <p>
-              An administrator reset the sign-in for{" "}
-              <strong className="break-all text-ink">{setup.email}</strong>.
-              You&apos;ll choose a new password and connect your phone again. If
-              your phone still has an old Lade entry, delete it first.
-            </p>
-          ) : (
-            <p>
-              You&apos;ve been invited to join Lade as {roleName}, signing in as{" "}
-              <strong className="break-all text-ink">{setup.email}</strong>.
-              First, connect your phone.
-            </p>
-          )}
-          <p>
-            Staff sign in with a password and a code from their phone, so a
-            stolen password alone can&apos;t open patient records.
-          </p>
-          <p>
-            <strong className="text-ink">iPhone:</strong> point the Camera at
-            the code below and tap &ldquo;Add verification code&rdquo;.{" "}
-            <strong className="text-ink">Android:</strong> scan it with Google
-            Authenticator or Microsoft Authenticator.
-          </p>
-        </div>
-        <Image
-          src={setup.qrCodeDataUrl}
-          alt="QR code for your authenticator app"
-          width={200}
-          height={200}
-          unoptimized
-          className="mx-auto rounded-card border border-line"
-        />
-        <details className="text-sm text-muted">
-          <summary className="cursor-pointer font-semibold text-secondary">
-            Setting up on this phone? Enter this key instead
-          </summary>
-          <p className="mt-2 break-all font-mono text-ink">{setup.secret}</p>
-        </details>
-        <InputField
-          name="mfaCode"
-          label="6-digit code from your phone"
-          hint="It changes every 30 seconds; enter the one showing now."
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={7}
-          required
-          error={errors.mfaCode}
-        />
-      </div>
-
-      {/* Step 2: You */}
+      {/* Step 1: You (new accounts only) */}
       <div hidden={current !== "You"} className="space-y-6">
-        <p className="text-muted">Your phone is connected. Now, your name.</p>
+        <p className="text-muted">
+          You&apos;ve been invited to join Lade as {roleName}, signing in as{" "}
+          <strong className="break-all text-ink">{setup.email}</strong>. First,
+          your name.
+        </p>
         <InputField
           name="name"
           label="Your name"
@@ -226,10 +163,18 @@ const AcceptInvite = ({ token }: { token: string }) => {
         />
       </div>
 
-      {/* Step 3: Password */}
+      {/* Step 2: Password */}
       <div hidden={current !== "Password"} className="space-y-6">
         <p className="text-muted">
-          Choose a password you don&apos;t use anywhere else.
+          {isReset ? (
+            <>
+              An administrator reset the sign-in for{" "}
+              <strong className="break-all text-ink">{setup.email}</strong>.
+              Choose a new password you don&apos;t use anywhere else.
+            </>
+          ) : (
+            "Choose a password you don't use anywhere else."
+          )}
         </p>
         <InputField
           name="password"
@@ -265,12 +210,10 @@ const AcceptInvite = ({ token }: { token: string }) => {
           className="sm:min-w-48"
         >
           {pending
-            ? step === 0
-              ? "Checking…"
-              : "Setting up…"
+            ? "Setting up…"
             : step < lastStep
               ? "Next"
-              : setup.kind === "reset"
+              : isReset
                 ? "Save and sign in"
                 : "Create staff account"}
         </Button>

@@ -28,7 +28,7 @@ const CONFIRM: Record<
   deactivate: (name) =>
     `Deactivate ${name}? They're signed out right away and can't sign in until reactivated.`,
   "reset-sign-in": (name) =>
-    `Reset ${name}'s sign-in? They'll get a link to choose a new password and connect their phone again. Their current sign-in keeps working until they use it.`,
+    `Reset ${name}'s sign-in? They'll get a link to choose a new password. Their current password keeps working until they use it.`,
   promote: (name) =>
     `Make ${name} an administrator? They'll be able to manage staff and waive fees.`,
   demote: (name) =>

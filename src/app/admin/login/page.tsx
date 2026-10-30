@@ -12,11 +12,11 @@ const StaffLogin = async ({ searchParams }: PageProps<"/admin/login">) => {
   return (
     <AuthShell
       title="Staff sign in"
-      intro="For Lade staff only. You'll need the code from your authenticator app."
+      intro="For Lade staff only."
       footer={
         <p>
-          Locked out or lost your phone? Ask an administrator to send you a new
-          invite.
+          Forgot your password or locked out? Ask an administrator to reset your
+          sign-in.
         </p>
       }
     >

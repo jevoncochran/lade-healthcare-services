@@ -78,14 +78,11 @@ export type Staff = {
 };
 
 export type InviteSetup = {
-  // "reset": an existing account getting a new password and phone code.
+  // "reset": an existing account getting a new password.
   kind: "invite" | "reset";
   name: string | null; // the account's current name, for a reset
   email: string;
   role: Staff["role"];
-  otpauthUrl: string;
-  qrCodeDataUrl: string;
-  secret: string;
 };
 
 // Only allow redirects to pages on this site after signing in, never to
