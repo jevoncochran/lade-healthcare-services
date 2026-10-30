@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
       source,
       headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
     })),
+  // One address for the site: the API only accepts sign-ins and bookings
+  // sent from https://ladehcs.com (its SITE_URL), so www would fail.
+  redirects: async () => [
+    {
+      source: "/:path*",
+      has: [{ type: "host", value: "www.ladehcs.com" }],
+      destination: "https://ladehcs.com/:path*",
+      permanent: true,
+    },
+  ],
 };
 
 export default nextConfig;
