@@ -24,13 +24,11 @@ const AcceptInvitePage = async ({
       {...(reset === "1"
         ? {
             title: "Reset your sign-in",
-            intro:
-              "Two quick steps: connect your phone again, then choose a new password.",
+            intro: "Choose a new password to get back into your account.",
           }
         : {
             title: "Set up your staff account",
-            intro:
-              "Three quick steps: connect your phone, add your name, and choose a password.",
+            intro: "Two quick steps: add your name, then choose a password.",
           })}
     >
       <AcceptInvite token={typeof token === "string" ? token : ""} />

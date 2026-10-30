@@ -7,7 +7,6 @@ import FormAlert from "@/components/account/FormAlert";
 import InputField from "@/components/form/InputField";
 import {
   checkEmail,
-  checkMfaCode,
   compactErrors,
   formPassword,
   formText,
@@ -27,13 +26,11 @@ const StaffLoginForm = ({ next }: { next: string | null }) => {
     const values = {
       email: formText(form, "email"),
       password: formPassword(form, "password"),
-      mfaCode: formText(form, "mfaCode").replace(/\s/g, ""),
     };
 
     const fieldErrors = compactErrors({
       email: checkEmail(values.email),
       password: values.password ? undefined : "Please enter your password.",
-      mfaCode: checkMfaCode(values.mfaCode),
     });
     setErrors(fieldErrors);
     setMessage(undefined);
@@ -68,16 +65,6 @@ const StaffLoginForm = ({ next }: { next: string | null }) => {
         autoComplete="current-password"
         required
         error={errors.password}
-      />
-      <InputField
-        name="mfaCode"
-        label="6-digit code"
-        hint="From your authenticator app. Each code works once."
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        maxLength={7}
-        required
-        error={errors.mfaCode}
       />
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? "Signing in…" : "Sign in"}

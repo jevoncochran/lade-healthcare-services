@@ -46,11 +46,6 @@ export const checkNewPassword = (password: string, confirm: string) => {
   return errors;
 };
 
-export const checkMfaCode = (code: string) => {
-  if (!/^\d{6}$/.test(code))
-    return "Enter the 6-digit code from your authenticator app.";
-};
-
 // Drops undefined entries so `Object.keys(errors).length` means "has errors".
 export const compactErrors = (errors: FieldErrors) =>
   Object.fromEntries(
