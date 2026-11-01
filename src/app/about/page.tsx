@@ -63,6 +63,10 @@ const About = () => {
       <PageHero
         title="About Us"
         intro="Where compassion meets care. We get people to the care they need, and we treat every rider the way we'd want our own family treated."
+        image="/assets/images/about/about_us_banner.jpg"
+        imageAlt="A woman guiding a man in a power wheelchair up the ramp into the back of an accessible van"
+        imagePosition="object-[center_60%]"
+        height="taller"
       />
 
       {/* Story + mission */}

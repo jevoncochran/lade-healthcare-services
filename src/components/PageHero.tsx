@@ -10,6 +10,14 @@ import type { ReactNode } from "react";
 //   natural shape (stacks under the text on phones). Use it when the photo
 //   needs to be seen in full.
 // No `image`: a plain navy header with just the text.
+
+// background layout only: how tall the header is, so more of the photo shows.
+const heights = {
+  default: "",
+  tall: "min-h-[360px] lg:min-h-[480px]",
+  taller: "min-h-[420px] sm:min-h-[520px] lg:min-h-[680px]",
+};
+
 const PageHero = ({
   title,
   intro,
@@ -17,6 +25,7 @@ const PageHero = ({
   imageAlt = "",
   imagePosition = "object-center",
   layout = "background",
+  height = "default",
   children,
 }: {
   title: string;
@@ -26,6 +35,8 @@ const PageHero = ({
   /** background layout only: Tailwind object-position classes, e.g. "object-[70%_30%]". */
   imagePosition?: string;
   layout?: "background" | "split";
+  /** background layout only: a taller header crops the photo less. */
+  height?: keyof typeof heights;
   /** Buttons or other content under the intro. */
   children?: ReactNode;
 }) => {
@@ -72,7 +83,9 @@ const PageHero = ({
   }
 
   return (
-    <section className="relative isolate overflow-hidden bg-primary">
+    <section
+      className={`relative isolate flex items-center overflow-hidden bg-primary ${heights[height]}`}
+    >
       <Image
         src={image}
         alt={imageAlt}
@@ -81,8 +94,10 @@ const PageHero = ({
         sizes="100vw"
         className={`-z-10 object-cover ${imagePosition}`}
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary via-primary/85 to-primary/20 lg:via-primary/60" />
-      <div className="container-site py-14 sm:py-16 lg:py-20">{copy}</div>
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary via-primary/85 to-primary/10 lg:via-primary/30" />
+      <div className="container-site w-full py-14 sm:py-16 lg:py-20">
+        {copy}
+      </div>
     </section>
   );
 };
