@@ -6,8 +6,15 @@ import { ArrowRightIcon, CheckIcon, PhoneIcon } from "@/components/Icons";
 import PageHero from "@/components/PageHero";
 import SectionHeader from "@/components/SectionHeader";
 import ServiceRow from "@/components/ServiceRow";
+import ServiceCard from "@/components/cards/ServiceCard";
 import { faqs } from "@/lib/faqs";
-import { audiences, paymentOptions, services } from "@/lib/services";
+import {
+  audiences,
+  featuredServices,
+  moreServices,
+  paymentOptions,
+  services,
+} from "@/lib/services";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -62,28 +69,53 @@ const Services = () => {
         </Button>
       </PageHero>
 
-      {/* Service list: links down to each service below */}
-      <nav aria-label="Our services" className="pt-10 sm:pt-12">
-        <ul className="container-site grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map(({ id, icon: Icon, title }) => (
-            <li key={id}>
-              <a
-                href={`#${id}`}
-                className="group card card-hover flex h-full items-center gap-4 p-5"
-              >
-                <span className="icon-badge h-12 w-12 shrink-0 transition-colors group-hover:bg-secondary group-hover:text-white">
-                  <Icon className="h-6 w-6" />
-                </span>
-                <span className="font-heading font-semibold text-primary">
-                  {title}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {/* Non-emergency medical transportation is what every service below
+          is, so it frames the list rather than being one of the services. */}
+      <section aria-labelledby="nemt-title" className="section section-alt">
+        <div className="container-site">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 id="nemt-title" className="section-title">
+              Non-Emergency Medical Transportation
+            </h2>
+            <p className="section-lead mt-4">
+              Every ride we offer is non-emergency medical transportation: safe,
+              scheduled rides for people who don&apos;t need an ambulance but do
+              need more than a taxi. We take riders to doctor and specialist
+              visits, therapy, imaging, procedures and follow-ups, and can wait
+              during the appointment or come back when you call.
+            </p>
+          </div>
 
-      {services.map((service, i) => (
+          {/* Jump links down to each service */}
+          <nav aria-labelledby="nemt-includes" className="mt-12">
+            <h3
+              id="nemt-includes"
+              className="text-center font-heading text-sm font-semibold uppercase tracking-wider text-secondary"
+            >
+              It includes
+            </h3>
+            <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {services.map(({ id, icon: Icon, title }) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    className="group card card-hover flex h-full items-center gap-4 p-5"
+                  >
+                    <span className="icon-badge h-12 w-12 shrink-0 transition-colors group-hover:bg-secondary group-hover:text-white">
+                      <Icon className="h-6 w-6" />
+                    </span>
+                    <span className="font-heading font-semibold text-primary">
+                      {title}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </section>
+
+      {featuredServices.map((service, i) => (
         <ServiceRow
           key={service.id}
           service={service}
@@ -91,6 +123,20 @@ const Services = () => {
           className={i % 2 === 1 ? "section-alt" : ""}
         />
       ))}
+
+      {/* Services without a photo: three across on desktop */}
+      <section aria-labelledby="more-services-title" className="section">
+        <div className="container-site">
+          <SectionHeader
+            title={<span id="more-services-title">More ways we can help</span>}
+          />
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {moreServices.map((service) => (
+              <ServiceCard key={service.id} service={service} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Assistance levels */}
       <section className="section section-alt">

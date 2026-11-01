@@ -101,9 +101,10 @@ export const paymentOptions = [
   "Cash / Private Pay",
 ];
 
-// Full service list for the Services page. `id` is the section anchor
-// (e.g. /services#hospital-discharge). Add `image` + `imageAlt` once the
-// client supplies a photo for a service; until then an icon panel is shown.
+// Services on the Services page. `id` is the section anchor (e.g.
+// /services#hospital-discharge). Non-emergency medical transportation isn't
+// one of them: it's what they all are, so the page introduces it above the
+// list. Featured services get a full row with a photo (`image` + `imageAlt`).
 // Details confirmed by Jevon for launch (2026-10-28).
 export type Service = {
   id: string;
@@ -118,21 +119,7 @@ export type Service = {
   action?: "book" | "call";
 };
 
-export const services: Service[] = [
-  {
-    id: "medical-appointments",
-    icon: HospitalIcon,
-    title: "Non-Emergency Medical Transportation",
-    paragraphs: [
-      "When an appointment matters but isn't an emergency, you need a ride you can count on. We take patients to doctor's offices, specialists, physical therapy, imaging, outpatient procedures and follow-up visits, then bring them home again.",
-      "Rather not be dropped off and picked up later? Book a wait-and-return trip. Your driver can wait during your appointment or come back as soon as you call.",
-    ],
-    highlights: [
-      "Doctor and specialist appointments",
-      "Therapy, imaging and outpatient procedures",
-      "Wait-and-return trips available",
-    ],
-  },
+export const featuredServices: Service[] = [
   {
     id: "hospital-discharge",
     icon: DischargeIcon,
@@ -146,6 +133,9 @@ export const services: Service[] = [
       "Day or night, including holidays",
       "Help from your room to your front door",
     ],
+    image: "/assets/images/services/hospital_discharge.jpg",
+    imageAlt:
+      "A smiling older woman in a hospital gown hugging a nurse beside her hospital bed",
   },
   {
     id: "wheelchair",
@@ -160,6 +150,9 @@ export const services: Service[] = [
       "Stay seated in your own wheelchair",
       "Manual and power wheelchairs",
     ],
+    image: "/assets/images/services/wheelchair_transport.jpg",
+    imageAlt:
+      "A helper pushing a person in a wheelchair up the ramp into the back of an accessible van",
   },
   {
     id: "stretcher",
@@ -174,6 +167,9 @@ export const services: Service[] = [
       "Bed-to-stretcher transfers",
       "For medically stable patients",
     ],
+    image: "/assets/images/services/stretcher_transportation.jpg",
+    imageAlt:
+      "Two attendants loading an older patient lying on a stretcher into the back of a transport van",
   },
   {
     id: "ambulatory",
@@ -188,17 +184,22 @@ export const services: Service[] = [
       "Walkers and canes welcome",
       "Door-to-door or door-through-door",
     ],
+    image: "/assets/images/services/ambulatory_transportation.jpg",
+    imageAlt:
+      "A caregiver holding an older woman's hands to help her step out of a car",
   },
+];
+
+// Shown three across as compact cards, so each has one short paragraph.
+export const moreServices: Service[] = [
   {
     id: "dialysis-recurring",
     icon: RepeatIcon,
     title: "Dialysis & Recurring Rides",
     paragraphs: [
-      "Dialysis, chemotherapy, physical therapy and other ongoing treatments don't leave room for a missed ride. Set up a standing schedule once and we'll be there for every session, without you having to call each week.",
-      "Facilities and case managers can set up recurring rides for their patients and residents too.",
+      "Set up a standing schedule once and we'll be there for every session, without a call each week. Facilities can schedule rides for their patients too.",
     ],
     highlights: [
-      "One standing schedule, every session",
       "Dialysis, chemotherapy and therapy",
       "Easy changes when your schedule does",
     ],
@@ -208,12 +209,10 @@ export const services: Service[] = [
     icon: HeartHandIcon,
     title: "Private Accessible Transportation",
     paragraphs: [
-      "Not every trip is medical. We also take seniors and riders with disabilities to family gatherings, weddings, church, shopping and everyday errands in an accessible vehicle, with a driver who's there to help.",
-      "Book a one-way ride, a round trip or a wait-and-return trip, any day of the week.",
+      "Not every trip is medical. Accessible rides to family events, church, shopping and errands, with a driver who's there to help.",
     ],
     highlights: [
-      "Family events, errands and outings",
-      "Accessible vehicles for every rider",
+      "Seniors and riders with disabilities",
       "One-way, round trip or wait-and-return",
     ],
   },
@@ -223,13 +222,11 @@ export const services: Service[] = [
     action: "call",
     title: "Long-Distance & Out-of-State Trips",
     paragraphs: [
-      "Heading to a specialist in Gainesville, Orlando or Jacksonville, or to another state? We provide long-distance medical transportation from the Tampa Bay area across Florida and beyond, with the same trained drivers and accessible vehicles.",
-      "Long trips are priced individually, so call us for a quote. We'll plan the route, any stops along the way and the ride home.",
+      "Specialists in Gainesville, Orlando or Jacksonville, or another state: we drive from Tampa Bay across Florida and beyond. Long trips are priced individually.",
     ],
-    highlights: [
-      "Across Florida and out of state",
-      "Wheelchair and stretcher trips",
-      "Call for a quote",
-    ],
+    highlights: ["Wheelchair and stretcher trips", "Call us for a quote"],
   },
 ];
+
+// Every service, in page order (footer links, the Services page's jump links).
+export const services: Service[] = [...featuredServices, ...moreServices];

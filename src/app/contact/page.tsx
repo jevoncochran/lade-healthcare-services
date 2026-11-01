@@ -29,6 +29,10 @@ const Contact = async ({ searchParams }: PageProps<"/contact">) => {
       <PageHero
         title="Contact Us"
         intro="Questions about a ride, your coverage or setting up an account? Call us any time, day or night, or send us a message."
+        image="/assets/images/contact/contact.jpg"
+        imageAlt="A smiling older woman taking a driver's arm as she steps out of a van"
+        imagePosition="object-[center_40%]"
+        height="tall"
       />
 
       <section className="section">
